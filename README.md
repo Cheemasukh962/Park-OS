@@ -39,3 +39,4 @@ Academic calendar
 Favorites
 Reminder settings
 Sent reminders log
+https://claude.ai/artifact/BSFb63c4XTBW9fJZSXy3eT 
