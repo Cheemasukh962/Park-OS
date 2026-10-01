@@ -40,3 +40,17 @@ Favorites
 Reminder settings
 Sent reminders log
 https://claude.ai/artifact/BSFb63c4XTBW9fJZSXy3eT 
+
+
+Current Problems: 
+Basically two main things some places in data are wocky not good/ or side street parking lots which may be a problem
+
+we were going to use polyogn using multip polyogns now
+
+STREET PARKING MAY SKIP YES UJSALLAY CHEAPTER 
+DOWNSIDES NOT A LOT OF SPOTS MULTIPLE ZONES IN EACH LANE
+GOOD THINK ABOUT ZONES ITS A PARKING RATE IS SAME? 
+Lots have no lat/lng, and only 3 have a pk_CAAN. I had assumed lots used the same ID as buildings. They don't, so lots.source_id should store GlobalID. That's a small change to the schema plan.
+6 lots are Restricted or Under Construction. The import should filter them out or flag them.
+2 lots and 3 buildings are MultiPolygons (one place made of several separate shapes), and the rest are plain Polygons. That's why the schema uses MultiPolygon for every row: the import converts single Polygons so the column holds one consistent type.
+733 "Other" entries are sheds, small structures and similar. When we match class buildings we should search Academic buildings first, or "Wellman" will also match "Grounds Shed Wellman".
