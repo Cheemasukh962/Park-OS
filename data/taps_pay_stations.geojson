@@ -1,1 +1,1012 @@
-{"type":"FeatureCollection","features":[{"type":"Feature","id":1,"geometry":{"type":"Point","coordinates":[-121.75956078871856,38.531841037794436]},"properties":{"OBJECTID":1,"NAME":"VP PCL","lat":38.531799319999998,"lon":-121.76000214,"type":"Visitor","GlobalID":"{2CF93A70-272C-414C-AC17-04316D9A9097}"}},{"type":"Feature","id":2,"geometry":{"type":"Point","coordinates":[-121.74918996424246,38.531906169058615]},"properties":{"OBJECTID":2,"NAME":"VP 2","lat":38.531700129999997,"lon":-121.75,"type":"Visitor-ACL","GlobalID":"{273B335B-3853-41F6-AD18-F1322C555C45}"}},{"type":"Feature","id":3,"geometry":{"type":"Point","coordinates":[-121.76281878020029,38.532038211101217]},"properties":{"OBJECTID":3,"NAME":"VP 50","lat":38.5320015,"lon":-121.76300049,"type":"Visitor","GlobalID":"{B11CEE9A-3A23-4BD4-B342-593B17EB8165}"}},{"type":"Feature","id":4,"geometry":{"type":"Point","coordinates":[-121.74904347402322,38.532572169844535]},"properties":{"OBJECTID":4,"NAME":"VP 1","lat":38.5326004,"lon":-121.74900055000001,"type":"Visitor","GlobalID":"{AE3E1E24-8459-4BDA-8507-DD27D9A345D2}"}},{"type":"Feature","id":5,"geometry":{"type":"Point","coordinates":[-121.76641888290864,38.534341251765156]},"properties":{"OBJECTID":5,"NAME":"VP 53","lat":38.534301759999998,"lon":-121.76599883999999,"type":"Visitor","GlobalID":"{8B7C2219-BA8E-46B4-95F2-14C56D642FA1}"}},{"type":"Feature","id":6,"geometry":{"type":"Point","coordinates":[-121.75647799639954,38.53484062713607]},"properties":{"OBJECTID":6,"NAME":"VP 47","lat":38.534801479999999,"lon":-121.7559967,"type":"Visitor","GlobalID":"{B06CC2E6-521A-4A6D-8D87-F8261B71A7A8}"}},{"type":"Feature","id":7,"geometry":{"type":"Point","coordinates":[-121.75493805217317,38.535819707884393]},"properties":{"OBJECTID":7,"NAME":"P 44","lat":38.535800930000001,"lon":-121.75499725,"type":"Non-Visitor","GlobalID":"{201E086F-0F09-42AC-AAAA-74FE704F3288}"}},{"type":"Feature","id":8,"geometry":{"type":"Point","coordinates":[-121.7501717922711,38.536725517226813]},"properties":{"OBJECTID":8,"NAME":"P 3","lat":38.536701200000003,"lon":-121.75,"type":"Non-Visitor","GlobalID":"{7DCE6031-1DFE-4E3B-9501-84ED00767CB9}"}},{"type":"Feature","id":9,"geometry":{"type":"Point","coordinates":[-121.7488224002451,38.538648854843224]},"properties":{"OBJECTID":9,"NAME":"P 6","lat":38.53860092,"lon":-121.74900055000001,"type":"Non-Visitor","GlobalID":"{23C6E5E8-4AE3-4C59-BFEA-242C2D9A2E71}"}},{"type":"Feature","id":10,"geometry":{"type":"Point","coordinates":[-121.7583320235133,38.538674134908298]},"properties":{"OBJECTID":10,"NAME":"VP 40","lat":38.5387001,"lon":-121.75800323,"type":"Visitor","GlobalID":"{72015FED-ED54-4D02-95CC-4CEDFD565BA4}"}},{"type":"Feature","id":11,"geometry":{"type":"Point","coordinates":[-121.75718274150773,38.538516565440091]},"properties":{"OBJECTID":11,"NAME":"P 41","lat":38.53860092,"lon":-121.75700378000001,"type":"Non-Visitor","GlobalID":"{C2877D63-D569-4769-B370-08E507473698}"}},{"type":"Feature","id":12,"geometry":{"type":"Point","coordinates":[-121.74591686541302,38.538433976297028]},"properties":{"OBJECTID":12,"NAME":"P 5A","lat":38.53879929,"lon":-121.74600220000001,"type":"Non-Visitor","GlobalID":"{D32BF53A-8CA7-420D-9444-0CF3FEAF4B91}"}},{"type":"Feature","id":13,"geometry":{"type":"Point","coordinates":[-121.74520992094925,38.538577215867825]},"properties":{"OBJECTID":13,"NAME":"VP 5","lat":38.53879929,"lon":-121.74500275,"type":"Visitor","GlobalID":"{C3F1AFD1-12BE-44AF-B549-7D44A75E7371}"}},{"type":"Feature","id":14,"geometry":{"type":"Point","coordinates":[-121.76552016483113,38.531936359853937]},"properties":{"OBJECTID":14,"NAME":"VP 51","lat":38.531799319999998,"lon":-121.76499939,"type":"Visitor","GlobalID":"{5658114F-307B-43A3-895C-FEEF968B03A8}"}},{"type":"Feature","id":15,"geometry":{"type":"Point","coordinates":[-121.74539620664351,38.540537039698094]},"properties":{"OBJECTID":15,"NAME":"P 10","lat":38.540500639999998,"lon":-121.74500275,"type":"Non-Visitor","GlobalID":"{7F03AEC4-999C-45DA-BCE3-E11DF4254AED}"}},{"type":"Feature","id":16,"geometry":{"type":"Point","coordinates":[-121.75551705249538,38.541200168513896]},"properties":{"OBJECTID":16,"NAME":"P 26","lat":38.541198729999998,"lon":-121.75499725,"type":"Non-Visitor","GlobalID":"{8D51605D-E44E-4C87-B00E-607B9AFCBC46}"}},{"type":"Feature","id":17,"geometry":{"type":"Point","coordinates":[-121.75449733339615,38.541567758562771]},"properties":{"OBJECTID":17,"NAME":"P 27","lat":38.541599269999999,"lon":-121.75399779999999,"type":"Non-Visitor","GlobalID":"{03EF7E1D-971E-43FB-8037-4EDC39511A50}"}},{"type":"Feature","id":18,"geometry":{"type":"Point","coordinates":[-121.76152218737167,38.54325885202995]},"properties":{"OBJECTID":18,"NAME":"VP 35","lat":38.543300629999997,"lon":-121.76200104,"type":"Visitor","GlobalID":"{8DCBE347-B799-425A-807F-0D98ADC97175}"}},{"type":"Feature","id":19,"geometry":{"type":"Point","coordinates":[-121.75137347215784,38.543885944738783]},"properties":{"OBJECTID":19,"NAME":"P 14","lat":38.543899539999998,"lon":-121.75099944999999,"type":"Non-Visitor","GlobalID":"{A5B607A8-09CB-4221-9116-3648841C1AFA}"}},{"type":"Feature","id":20,"geometry":{"type":"Point","coordinates":[-121.75283461861984,38.544442807702012]},"properties":{"OBJECTID":20,"NAME":"VP 15","lat":38.544399259999999,"lon":-121.75299835,"type":"Visitor","GlobalID":"{19785B2B-6A6C-4A26-B713-B60EAA22DD60}"}},{"type":"Feature","id":21,"geometry":{"type":"Point","coordinates":[-121.75626281111764,38.544788515591236]},"properties":{"OBJECTID":21,"NAME":"VP 22","lat":38.5447998,"lon":-121.7559967,"type":"Visitor","GlobalID":"{63E85BFA-BE64-4AFA-AF3E-C720F328B4D6}"}},{"type":"Feature","id":22,"geometry":{"type":"Point","coordinates":[-121.75519482821764,38.544829139708341]},"properties":{"OBJECTID":22,"NAME":"VP 16","lat":38.5447998,"lon":-121.75499725,"type":"Visitor","GlobalID":"{854A591C-44F8-43F3-B2B0-A02F28FF3E07}"}},{"type":"Feature","id":23,"geometry":{"type":"Point","coordinates":[-121.76767430080665,38.533410580137435]},"properties":{"OBJECTID":23,"NAME":"VP 57","lat":38.533401490000003,"lon":-121.76799774,"type":"Visitor","GlobalID":"{070A3206-FEFE-4834-9C37-0200D7279201}"}},{"type":"Feature","id":24,"geometry":{"type":"Point","coordinates":[-121.76262544462611,38.531071457052015]},"properties":{"OBJECTID":24,"NAME":"VP 55","lat":38.531101229999997,"lon":-121.76300049,"type":"Visitor","GlobalID":"{55837AEB-03EE-4D22-A3A9-8212949F8D15}"}},{"type":"Feature","id":25,"geometry":{"type":"Point","coordinates":[-121.76296437034352,38.535145127363222]},"properties":{"OBJECTID":25,"NAME":"VP 56","lat":38.535099029999998,"lon":-121.76300049,"type":"Visitor","GlobalID":"{212E7960-C639-4ED2-9509-DFE0FE09BD66}"}},{"type":"Feature","id":26,"geometry":{"type":"Point","coordinates":[-121.76374653898205,38.535145864116039]},"properties":{"OBJECTID":26,"NAME":"P 56A","lat":38.535099029999998,"lon":-121.76399994000001,"type":"Non-Visitor","GlobalID":"{328A1BCE-9A48-4CC5-8BAC-C8CF91A4B896}"}},{"type":"Feature","id":27,"geometry":{"type":"Point","coordinates":[-121.76315183475171,38.539731441416251]},"properties":{"OBJECTID":27,"NAME":"VP 30","lat":38.539699550000002,"lon":-121.76300049,"type":"Visitor-ACL","GlobalID":"{D50EBFD0-3320-46BD-B8FA-31A30560164C}"}},{"type":"Feature","id":28,"geometry":{"type":"Point","coordinates":[-121.75912753650239,38.536795255165792]},"properties":{"OBJECTID":28,"NAME":"VP 48","lat":38.536800380000003,"lon":-121.75900269,"type":"Visitor","GlobalID":"{B7970AF9-C9A9-40A6-81ED-B0C4A77BB75A}"}},{"type":"Feature","id":29,"geometry":{"type":"Point","coordinates":[-121.7595237064676,38.533750677224965]},"properties":{"OBJECTID":29,"NAME":"VP 49","lat":38.533699040000002,"lon":-121.76000214,"type":"Visitor","GlobalID":"{9235BD01-C581-4DF5-9566-78CECD2A1B0F}"}},{"type":"Feature","id":30,"geometry":{"type":"Point","coordinates":[-121.75759399439102,38.543160360341552]},"properties":{"OBJECTID":30,"NAME":"VP 25","lat":38.542999270000003,"lon":-121.75800323,"type":"Visitor","GlobalID":"{1FE4D732-87B6-4791-90A8-23E78E42C789}"}},{"type":"Feature","id":31,"geometry":{"type":"Point","coordinates":[-121.75334273758624,38.53472547648218]},"properties":{"OBJECTID":31,"NAME":"P 46","lat":38.534698489999997,"lon":-121.75299835,"type":"Non-Visitor","GlobalID":"{A87CCB26-76DE-4875-8132-F6D9ABCC509F}"}},{"type":"Feature","id":32,"geometry":{"type":"Point","coordinates":[-121.75291594111413,38.543864277888495]},"properties":{"OBJECTID":32,"NAME":"P 14","lat":38.543899539999998,"lon":-121.75299835,"type":"Non-Visitor","GlobalID":"{493CB8D9-590A-42E8-8C85-4A608C99E995}"}},{"type":"Feature","id":33,"geometry":{"type":"Point","coordinates":[-121.74915025672033,38.544419816443209]},"properties":{"OBJECTID":33,"NAME":"Quad Structure","lat":38.544399259999999,"lon":-121.74900055000001,"type":"Visitor","GlobalID":"{4E0D0D90-80D5-4E08-8ED1-068509C7F170}"}},{"type":"Feature","id":34,"geometry":{"type":"Point","coordinates":[-121.74690212948114,38.533891579251772]},"properties":{"OBJECTID":34,"NAME":"VP 1","lat":38.533798220000001,"lon":-121.74700165,"type":"Visitor","GlobalID":"{195E7614-98C4-43A0-9262-72FD199B0EFA}"}},{"type":"Feature","id":35,"geometry":{"type":"Point","coordinates":[-121.76170291145333,38.531226315707791]},"properties":{"OBJECTID":35,"NAME":"VP 54","lat":38.530998230000002,"lon":-121.76200104,"type":"Visitor","GlobalID":"{76608F4F-2B35-4A7D-BC5A-2947CC623709}"}},{"type":"Feature","id":36,"geometry":{"type":"Point","coordinates":[-121.76578608660155,38.533323556396176]},"properties":{"OBJECTID":36,"NAME":"P 52","lat":38.533401490000003,"lon":-121.76599883999999,"type":"Non-Visitor","GlobalID":"{1111F487-6F6D-4FD4-8FA5-2C947C79A3DC}"}},{"type":"Feature","id":37,"geometry":{"type":"Point","coordinates":[-121.75841528607496,38.539810020465694]},"properties":{"OBJECTID":37,"NAME":"Pavilion Structure","lat":38.539699550000002,"lon":-121.75800323,"type":"Visitor","GlobalID":"{6B70EB7B-2152-4D01-ABBE-CE1EC72FBED2}"}},{"type":"Feature","id":38,"geometry":{"type":"Point","coordinates":[-121.74859956202583,38.533214146538768]},"properties":{"OBJECTID":38,"NAME":"Gateway Structure","lat":38.533199310000001,"lon":-121.74900055000001,"type":"Visitor","GlobalID":"{E9E9BCB4-9FFC-4EDA-A7EE-40B5E2BCF35F}"}},{"type":"Feature","id":39,"geometry":{"type":"Point","coordinates":[-121.74974930294853,38.544321449322027]},"properties":{"OBJECTID":39,"NAME":"Quad Structure","lat":38.544399259999999,"lon":-121.74900055000001,"type":"Non-Visitor","GlobalID":"{4FCCE033-3B70-47E0-9017-11684B337D5D}"}},{"type":"Feature","id":40,"geometry":{"type":"Point","coordinates":[-121.74951579325655,38.533176330838998]},"properties":{"OBJECTID":40,"NAME":"Gateway Structure","lat":38.533199310000001,"lon":-121.74900055000001,"type":"Non-Visitor","GlobalID":"{310924A1-58B5-4AF0-ABB4-6B86585AE67B}"}},{"type":"Feature","id":41,"geometry":{"type":"Point","coordinates":[-121.75769116862777,38.539812954891048]},"properties":{"OBJECTID":41,"NAME":"Pavilion Structure","lat":38.539699550000002,"lon":-121.75800323,"type":"Non-Visitor","GlobalID":"{C136A155-C833-4B00-B6C8-7957E63357BC}"}},{"type":"Feature","id":42,"geometry":{"type":"Point","coordinates":[-121.75473763036068,38.544475934794747]},"properties":{"OBJECTID":42,"NAME":"P 21","lat":0,"lon":0,"type":"Non-Visitor","GlobalID":"{BD56D20D-73C2-4AA6-A18F-B985C1BAAAEB}"}},{"type":"Feature","id":43,"geometry":{"type":"Point","coordinates":[-121.76136055776257,38.536510139277055]},"properties":{"OBJECTID":43,"NAME":" ","lat":0,"lon":0,"type":"Visitor","GlobalID":"{729F4C8B-FC0C-4F45-99D6-F68309CDA92A}"}},{"type":"Feature","id":44,"geometry":{"type":"Point","coordinates":[-121.7503668772968,38.534148067781167]},"properties":{"OBJECTID":44,"NAME":"Mondavi Admin Lot","lat":0,"lon":0,"type":"Non-Visitor","GlobalID":"{4535B7B5-B69D-4661-BBC3-7157EC7A2CEA}"}},{"type":"Feature","id":45,"geometry":{"type":"Point","coordinates":[-121.75375059437137,38.542920310787224]},"properties":{"OBJECTID":45,"NAME":"P 20","lat":0,"lon":0,"type":"Non-Visitor","GlobalID":"{AF635E2D-3A97-44BF-A6DB-3F399DEB52B1}"}},{"type":"Feature","id":48,"geometry":{"type":"Point","coordinates":[-121.73242332603897,38.539597018563228]},"properties":{"OBJECTID":48,"NAME":"VP 80","lat":null,"lon":null,"type":"Visitor","GlobalID":"{625ABFEF-7FBF-431C-A7A7-9EF9AEA410F3}"}},{"type":"Feature","id":50,"geometry":{"type":"Point","coordinates":[-121.73278274112846,38.538120037249037]},"properties":{"OBJECTID":50,"NAME":"VP 81","lat":null,"lon":null,"type":"Visitor","GlobalID":"{856462E9-3C1E-4FBA-8461-99040324BDFB}"}},{"type":"Feature","id":2454,"geometry":{"type":"Point","coordinates":[-121.80541231473171,38.53842249146625]},"properties":{"OBJECTID":2454,"NAME":"VP 31","lat":null,"lon":null,"type":"Visitor","GlobalID":"{FDE971BC-974A-420F-B6DA-B0F1EFE0D5DD}"}},{"type":"Feature","id":2455,"geometry":{"type":"Point","coordinates":[-121.80609896032423,38.539219726953526]},"properties":{"OBJECTID":2455,"NAME":"VP 31","lat":null,"lon":null,"type":"Visitor","GlobalID":"{ED2F1650-B7D9-4CF7-94DD-6FA440F86F01}"}},{"type":"Feature","id":2456,"geometry":{"type":"Point","coordinates":[-121.80461837995055,38.540054716560583]},"properties":{"OBJECTID":2456,"NAME":"VP 31","lat":null,"lon":null,"type":"Visitor","GlobalID":"{BC60D493-E300-47EB-8C26-F63232EC1E4A}"}},{"type":"Feature","id":2460,"geometry":{"type":"Point","coordinates":[-121.73215615053159,38.538126596438474]},"properties":{"OBJECTID":2460,"NAME":null,"lat":null,"lon":null,"type":"Visitor","GlobalID":"{97E6B792-93DD-4C0C-95B9-273EC7248D26}"}},{"type":"Feature","id":3254,"geometry":{"type":"Point","coordinates":[-121.73535199297082,38.53920469806576]},"properties":{"OBJECTID":3254,"NAME":"VP 83","lat":null,"lon":null,"type":"Visitor","GlobalID":"{F147444D-2DB9-43A5-829B-E6D14CF64811}"}},{"type":"Feature","id":3255,"geometry":{"type":"Point","coordinates":[-121.73421473641355,38.539498414731462]},"properties":{"OBJECTID":3255,"NAME":"VP 82","lat":null,"lon":null,"type":"Visitor","GlobalID":"{7B9922F6-3008-45E1-8DFD-6A9ECA2A4D01}"}}]}
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": 1,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75956078871856,
+                    38.531841037794436
+                ]
+            },
+            "properties": {
+                "OBJECTID": 1,
+                "NAME": "VP PCL",
+                "lat": 38.531799319999998,
+                "lon": -121.76000214,
+                "type": "Visitor",
+                "GlobalID": "{2CF93A70-272C-414C-AC17-04316D9A9097}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 2,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74918996424246,
+                    38.531906169058615
+                ]
+            },
+            "properties": {
+                "OBJECTID": 2,
+                "NAME": "VP 2",
+                "lat": 38.531700129999997,
+                "lon": -121.75,
+                "type": "Visitor-ACL",
+                "GlobalID": "{273B335B-3853-41F6-AD18-F1322C555C45}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76281878020029,
+                    38.532038211101217
+                ]
+            },
+            "properties": {
+                "OBJECTID": 3,
+                "NAME": "VP 50",
+                "lat": 38.5320015,
+                "lon": -121.76300049,
+                "type": "Visitor",
+                "GlobalID": "{B11CEE9A-3A23-4BD4-B342-593B17EB8165}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 4,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74904347402322,
+                    38.532572169844535
+                ]
+            },
+            "properties": {
+                "OBJECTID": 4,
+                "NAME": "VP 1",
+                "lat": 38.5326004,
+                "lon": -121.74900055000001,
+                "type": "Visitor",
+                "GlobalID": "{AE3E1E24-8459-4BDA-8507-DD27D9A345D2}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 5,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76641888290864,
+                    38.534341251765156
+                ]
+            },
+            "properties": {
+                "OBJECTID": 5,
+                "NAME": "VP 53",
+                "lat": 38.534301759999998,
+                "lon": -121.76599883999999,
+                "type": "Visitor",
+                "GlobalID": "{8B7C2219-BA8E-46B4-95F2-14C56D642FA1}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 6,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75647799639954,
+                    38.53484062713607
+                ]
+            },
+            "properties": {
+                "OBJECTID": 6,
+                "NAME": "VP 47",
+                "lat": 38.534801479999999,
+                "lon": -121.7559967,
+                "type": "Visitor",
+                "GlobalID": "{B06CC2E6-521A-4A6D-8D87-F8261B71A7A8}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 7,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75493805217317,
+                    38.535819707884393
+                ]
+            },
+            "properties": {
+                "OBJECTID": 7,
+                "NAME": "P 44",
+                "lat": 38.535800930000001,
+                "lon": -121.75499725,
+                "type": "Non-Visitor",
+                "GlobalID": "{201E086F-0F09-42AC-AAAA-74FE704F3288}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 8,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.7501717922711,
+                    38.536725517226813
+                ]
+            },
+            "properties": {
+                "OBJECTID": 8,
+                "NAME": "P 3",
+                "lat": 38.536701200000003,
+                "lon": -121.75,
+                "type": "Non-Visitor",
+                "GlobalID": "{7DCE6031-1DFE-4E3B-9501-84ED00767CB9}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 9,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.7488224002451,
+                    38.538648854843224
+                ]
+            },
+            "properties": {
+                "OBJECTID": 9,
+                "NAME": "P 6",
+                "lat": 38.53860092,
+                "lon": -121.74900055000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{23C6E5E8-4AE3-4C59-BFEA-242C2D9A2E71}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 10,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.7583320235133,
+                    38.538674134908298
+                ]
+            },
+            "properties": {
+                "OBJECTID": 10,
+                "NAME": "VP 40",
+                "lat": 38.5387001,
+                "lon": -121.75800323,
+                "type": "Visitor",
+                "GlobalID": "{72015FED-ED54-4D02-95CC-4CEDFD565BA4}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 11,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75718274150773,
+                    38.538516565440091
+                ]
+            },
+            "properties": {
+                "OBJECTID": 11,
+                "NAME": "P 41",
+                "lat": 38.53860092,
+                "lon": -121.75700378000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{C2877D63-D569-4769-B370-08E507473698}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 12,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74591686541302,
+                    38.538433976297028
+                ]
+            },
+            "properties": {
+                "OBJECTID": 12,
+                "NAME": "P 5A",
+                "lat": 38.53879929,
+                "lon": -121.74600220000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{D32BF53A-8CA7-420D-9444-0CF3FEAF4B91}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 13,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74520992094925,
+                    38.538577215867825
+                ]
+            },
+            "properties": {
+                "OBJECTID": 13,
+                "NAME": "VP 5",
+                "lat": 38.53879929,
+                "lon": -121.74500275,
+                "type": "Visitor",
+                "GlobalID": "{C3F1AFD1-12BE-44AF-B549-7D44A75E7371}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 14,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76552016483113,
+                    38.531936359853937
+                ]
+            },
+            "properties": {
+                "OBJECTID": 14,
+                "NAME": "VP 51",
+                "lat": 38.531799319999998,
+                "lon": -121.76499939,
+                "type": "Visitor",
+                "GlobalID": "{5658114F-307B-43A3-895C-FEEF968B03A8}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 15,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74539620664351,
+                    38.540537039698094
+                ]
+            },
+            "properties": {
+                "OBJECTID": 15,
+                "NAME": "P 10",
+                "lat": 38.540500639999998,
+                "lon": -121.74500275,
+                "type": "Non-Visitor",
+                "GlobalID": "{7F03AEC4-999C-45DA-BCE3-E11DF4254AED}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 16,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75551705249538,
+                    38.541200168513896
+                ]
+            },
+            "properties": {
+                "OBJECTID": 16,
+                "NAME": "P 26",
+                "lat": 38.541198729999998,
+                "lon": -121.75499725,
+                "type": "Non-Visitor",
+                "GlobalID": "{8D51605D-E44E-4C87-B00E-607B9AFCBC46}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 17,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75449733339615,
+                    38.541567758562771
+                ]
+            },
+            "properties": {
+                "OBJECTID": 17,
+                "NAME": "P 27",
+                "lat": 38.541599269999999,
+                "lon": -121.75399779999999,
+                "type": "Non-Visitor",
+                "GlobalID": "{03EF7E1D-971E-43FB-8037-4EDC39511A50}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 18,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76152218737167,
+                    38.54325885202995
+                ]
+            },
+            "properties": {
+                "OBJECTID": 18,
+                "NAME": "VP 35",
+                "lat": 38.543300629999997,
+                "lon": -121.76200104,
+                "type": "Visitor",
+                "GlobalID": "{8DCBE347-B799-425A-807F-0D98ADC97175}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 19,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75137347215784,
+                    38.543885944738783
+                ]
+            },
+            "properties": {
+                "OBJECTID": 19,
+                "NAME": "P 14",
+                "lat": 38.543899539999998,
+                "lon": -121.75099944999999,
+                "type": "Non-Visitor",
+                "GlobalID": "{A5B607A8-09CB-4221-9116-3648841C1AFA}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 20,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75283461861984,
+                    38.544442807702012
+                ]
+            },
+            "properties": {
+                "OBJECTID": 20,
+                "NAME": "VP 15",
+                "lat": 38.544399259999999,
+                "lon": -121.75299835,
+                "type": "Visitor",
+                "GlobalID": "{19785B2B-6A6C-4A26-B713-B60EAA22DD60}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 21,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75626281111764,
+                    38.544788515591236
+                ]
+            },
+            "properties": {
+                "OBJECTID": 21,
+                "NAME": "VP 22",
+                "lat": 38.5447998,
+                "lon": -121.7559967,
+                "type": "Visitor",
+                "GlobalID": "{63E85BFA-BE64-4AFA-AF3E-C720F328B4D6}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 22,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75519482821764,
+                    38.544829139708341
+                ]
+            },
+            "properties": {
+                "OBJECTID": 22,
+                "NAME": "VP 16",
+                "lat": 38.5447998,
+                "lon": -121.75499725,
+                "type": "Visitor",
+                "GlobalID": "{854A591C-44F8-43F3-B2B0-A02F28FF3E07}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 23,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76767430080665,
+                    38.533410580137435
+                ]
+            },
+            "properties": {
+                "OBJECTID": 23,
+                "NAME": "VP 57",
+                "lat": 38.533401490000003,
+                "lon": -121.76799774,
+                "type": "Visitor",
+                "GlobalID": "{070A3206-FEFE-4834-9C37-0200D7279201}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 24,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76262544462611,
+                    38.531071457052015
+                ]
+            },
+            "properties": {
+                "OBJECTID": 24,
+                "NAME": "VP 55",
+                "lat": 38.531101229999997,
+                "lon": -121.76300049,
+                "type": "Visitor",
+                "GlobalID": "{55837AEB-03EE-4D22-A3A9-8212949F8D15}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 25,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76296437034352,
+                    38.535145127363222
+                ]
+            },
+            "properties": {
+                "OBJECTID": 25,
+                "NAME": "VP 56",
+                "lat": 38.535099029999998,
+                "lon": -121.76300049,
+                "type": "Visitor",
+                "GlobalID": "{212E7960-C639-4ED2-9509-DFE0FE09BD66}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 26,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76374653898205,
+                    38.535145864116039
+                ]
+            },
+            "properties": {
+                "OBJECTID": 26,
+                "NAME": "P 56A",
+                "lat": 38.535099029999998,
+                "lon": -121.76399994000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{328A1BCE-9A48-4CC5-8BAC-C8CF91A4B896}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 27,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76315183475171,
+                    38.539731441416251
+                ]
+            },
+            "properties": {
+                "OBJECTID": 27,
+                "NAME": "VP 30",
+                "lat": 38.539699550000002,
+                "lon": -121.76300049,
+                "type": "Visitor-ACL",
+                "GlobalID": "{D50EBFD0-3320-46BD-B8FA-31A30560164C}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 28,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75912753650239,
+                    38.536795255165792
+                ]
+            },
+            "properties": {
+                "OBJECTID": 28,
+                "NAME": "VP 48",
+                "lat": 38.536800380000003,
+                "lon": -121.75900269,
+                "type": "Visitor",
+                "GlobalID": "{B7970AF9-C9A9-40A6-81ED-B0C4A77BB75A}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 29,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.7595237064676,
+                    38.533750677224965
+                ]
+            },
+            "properties": {
+                "OBJECTID": 29,
+                "NAME": "VP 49",
+                "lat": 38.533699040000002,
+                "lon": -121.76000214,
+                "type": "Visitor",
+                "GlobalID": "{9235BD01-C581-4DF5-9566-78CECD2A1B0F}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 30,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75759399439102,
+                    38.543160360341552
+                ]
+            },
+            "properties": {
+                "OBJECTID": 30,
+                "NAME": "VP 25",
+                "lat": 38.542999270000003,
+                "lon": -121.75800323,
+                "type": "Visitor",
+                "GlobalID": "{1FE4D732-87B6-4791-90A8-23E78E42C789}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 31,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75334273758624,
+                    38.53472547648218
+                ]
+            },
+            "properties": {
+                "OBJECTID": 31,
+                "NAME": "P 46",
+                "lat": 38.534698489999997,
+                "lon": -121.75299835,
+                "type": "Non-Visitor",
+                "GlobalID": "{A87CCB26-76DE-4875-8132-F6D9ABCC509F}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 32,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75291594111413,
+                    38.543864277888495
+                ]
+            },
+            "properties": {
+                "OBJECTID": 32,
+                "NAME": "P 14",
+                "lat": 38.543899539999998,
+                "lon": -121.75299835,
+                "type": "Non-Visitor",
+                "GlobalID": "{493CB8D9-590A-42E8-8C85-4A608C99E995}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 33,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74915025672033,
+                    38.544419816443209
+                ]
+            },
+            "properties": {
+                "OBJECTID": 33,
+                "NAME": "Quad Structure",
+                "lat": 38.544399259999999,
+                "lon": -121.74900055000001,
+                "type": "Visitor",
+                "GlobalID": "{4E0D0D90-80D5-4E08-8ED1-068509C7F170}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 34,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74690212948114,
+                    38.533891579251772
+                ]
+            },
+            "properties": {
+                "OBJECTID": 34,
+                "NAME": "VP 1",
+                "lat": 38.533798220000001,
+                "lon": -121.74700165,
+                "type": "Visitor",
+                "GlobalID": "{195E7614-98C4-43A0-9262-72FD199B0EFA}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 35,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76170291145333,
+                    38.531226315707791
+                ]
+            },
+            "properties": {
+                "OBJECTID": 35,
+                "NAME": "VP 54",
+                "lat": 38.530998230000002,
+                "lon": -121.76200104,
+                "type": "Visitor",
+                "GlobalID": "{76608F4F-2B35-4A7D-BC5A-2947CC623709}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 36,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76578608660155,
+                    38.533323556396176
+                ]
+            },
+            "properties": {
+                "OBJECTID": 36,
+                "NAME": "P 52",
+                "lat": 38.533401490000003,
+                "lon": -121.76599883999999,
+                "type": "Non-Visitor",
+                "GlobalID": "{1111F487-6F6D-4FD4-8FA5-2C947C79A3DC}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 37,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75841528607496,
+                    38.539810020465694
+                ]
+            },
+            "properties": {
+                "OBJECTID": 37,
+                "NAME": "Pavilion Structure",
+                "lat": 38.539699550000002,
+                "lon": -121.75800323,
+                "type": "Visitor",
+                "GlobalID": "{6B70EB7B-2152-4D01-ABBE-CE1EC72FBED2}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 38,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74859956202583,
+                    38.533214146538768
+                ]
+            },
+            "properties": {
+                "OBJECTID": 38,
+                "NAME": "Gateway Structure",
+                "lat": 38.533199310000001,
+                "lon": -121.74900055000001,
+                "type": "Visitor",
+                "GlobalID": "{E9E9BCB4-9FFC-4EDA-A7EE-40B5E2BCF35F}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 39,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74974930294853,
+                    38.544321449322027
+                ]
+            },
+            "properties": {
+                "OBJECTID": 39,
+                "NAME": "Quad Structure",
+                "lat": 38.544399259999999,
+                "lon": -121.74900055000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{4FCCE033-3B70-47E0-9017-11684B337D5D}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 40,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.74951579325655,
+                    38.533176330838998
+                ]
+            },
+            "properties": {
+                "OBJECTID": 40,
+                "NAME": "Gateway Structure",
+                "lat": 38.533199310000001,
+                "lon": -121.74900055000001,
+                "type": "Non-Visitor",
+                "GlobalID": "{310924A1-58B5-4AF0-ABB4-6B86585AE67B}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 41,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75769116862777,
+                    38.539812954891048
+                ]
+            },
+            "properties": {
+                "OBJECTID": 41,
+                "NAME": "Pavilion Structure",
+                "lat": 38.539699550000002,
+                "lon": -121.75800323,
+                "type": "Non-Visitor",
+                "GlobalID": "{C136A155-C833-4B00-B6C8-7957E63357BC}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 42,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75473763036068,
+                    38.544475934794747
+                ]
+            },
+            "properties": {
+                "OBJECTID": 42,
+                "NAME": "P 21",
+                "lat": 0,
+                "lon": 0,
+                "type": "Non-Visitor",
+                "GlobalID": "{BD56D20D-73C2-4AA6-A18F-B985C1BAAAEB}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 43,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.76136055776257,
+                    38.536510139277055
+                ]
+            },
+            "properties": {
+                "OBJECTID": 43,
+                "NAME": " ",
+                "lat": 0,
+                "lon": 0,
+                "type": "Visitor",
+                "GlobalID": "{729F4C8B-FC0C-4F45-99D6-F68309CDA92A}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 44,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.7503668772968,
+                    38.534148067781167
+                ]
+            },
+            "properties": {
+                "OBJECTID": 44,
+                "NAME": "Mondavi Admin Lot",
+                "lat": 0,
+                "lon": 0,
+                "type": "Non-Visitor",
+                "GlobalID": "{4535B7B5-B69D-4661-BBC3-7157EC7A2CEA}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 45,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.75375059437137,
+                    38.542920310787224
+                ]
+            },
+            "properties": {
+                "OBJECTID": 45,
+                "NAME": "P 20",
+                "lat": 0,
+                "lon": 0,
+                "type": "Non-Visitor",
+                "GlobalID": "{AF635E2D-3A97-44BF-A6DB-3F399DEB52B1}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 48,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.73242332603897,
+                    38.539597018563228
+                ]
+            },
+            "properties": {
+                "OBJECTID": 48,
+                "NAME": "VP 80",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{625ABFEF-7FBF-431C-A7A7-9EF9AEA410F3}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 50,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.73278274112846,
+                    38.538120037249037
+                ]
+            },
+            "properties": {
+                "OBJECTID": 50,
+                "NAME": "VP 81",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{856462E9-3C1E-4FBA-8461-99040324BDFB}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 2454,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.80541231473171,
+                    38.53842249146625
+                ]
+            },
+            "properties": {
+                "OBJECTID": 2454,
+                "NAME": "VP 31",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{FDE971BC-974A-420F-B6DA-B0F1EFE0D5DD}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 2455,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.80609896032423,
+                    38.539219726953526
+                ]
+            },
+            "properties": {
+                "OBJECTID": 2455,
+                "NAME": "VP 31",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{ED2F1650-B7D9-4CF7-94DD-6FA440F86F01}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 2456,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.80461837995055,
+                    38.540054716560583
+                ]
+            },
+            "properties": {
+                "OBJECTID": 2456,
+                "NAME": "VP 31",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{BC60D493-E300-47EB-8C26-F63232EC1E4A}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 2460,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.73215615053159,
+                    38.538126596438474
+                ]
+            },
+            "properties": {
+                "OBJECTID": 2460,
+                "NAME": null,
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{97E6B792-93DD-4C0C-95B9-273EC7248D26}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3254,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.73535199297082,
+                    38.53920469806576
+                ]
+            },
+            "properties": {
+                "OBJECTID": 3254,
+                "NAME": "VP 83",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{F147444D-2DB9-43A5-829B-E6D14CF64811}"
+            }
+        },
+        {
+            "type": "Feature",
+            "id": 3255,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -121.73421473641355,
+                    38.539498414731462
+                ]
+            },
+            "properties": {
+                "OBJECTID": 3255,
+                "NAME": "VP 82",
+                "lat": null,
+                "lon": null,
+                "type": "Visitor",
+                "GlobalID": "{7B9922F6-3008-45E1-8DFD-6A9ECA2A4D01}"
+            }
+        }
+    ]
+}
