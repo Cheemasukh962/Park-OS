@@ -1,0 +1,13 @@
+zone_code,affiliation,price_cents,available_from,effective_from
+A,staff,650,,2026-07-01
+A,student,650,17:00,2026-07-01
+A,visitor,1900,17:00,2026-07-01
+C+,staff,650,,2026-07-01
+C+,student,650,,2026-07-01
+C+,visitor,1900,17:00,2026-07-01
+C,staff,550,,2026-07-01
+C,student,550,,2026-07-01
+C,visitor,1900,,2026-07-01
+L,staff,375,,2026-07-01
+L,student,375,,2026-07-01
+L,visitor,1900,,2026-07-01

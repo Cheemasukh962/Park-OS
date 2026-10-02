@@ -1,6 +1,6 @@
 # UC Davis Parking App: project context and conversation summary
 
-This file summarises the planning conversation (Sept 27–28, 2026) between Sukhman and Claude Code, so work can continue on another computer. **Read all of it before doing anything.** Current stage: **planning the data layer. No app code has been written yet.**
+This file summarises the conversations (Sept 27–28 and Oct 1–2, 2026) between Sukhman and Claude Code, so work can continue on another computer. **Read all of it before doing anything.** Current stage: **prototyping the core logic in plain Python** (`backend/howfar.py`, `backend/reminders.py`, see section 14). No database, Flask or front end yet.
 
 ---
 
@@ -10,6 +10,10 @@ This file summarises the planning conversation (Sept 27–28, 2026) between Sukh
 - They like to **plan before building**. Several times they said "just plan, don't build anything yet". Don't write app code until they ask.
 - They like **visuals**. They asked for an editable diagram of the database (see section 9).
 - They use Windows, VS Code and Claude Code.
+- **Before changing code, say which files will change, how and why**, and wait for approval. A tested preview (written in the scratchpad and run, with real output shown) works well. After a change, explain what changed and why, line by line where it helps.
+- They **may be interviewed on this project**, so explain where each piece of data came from and why each decision was made, in terms they could repeat.
+- **Don't add Claude as a co-author** on their commits.
+- Their Python is **3.15.0a5 (an alpha)**. The prototypes only use the standard library, but install Python 3.13 before adding packages like Flask or psycopg.
 
 ---
 
@@ -17,6 +21,15 @@ This file summarises the planning conversation (Sept 27–28, 2026) between Sukh
 A web app that helps UC Davis students (and staff and visitors):
 1. **Remember to pay for parking.** Users enter their class schedule, and the app reminds them before their first class of the day.
 2. **Find the cheapest parking.** It shows the cheapest lots the user is allowed to use near their class buildings, or near their current location while the page is open. The user's point: many people, even ones who've been here a while, don't know which lots are cheapest.
+
+### The main flow (set by Sukhman, Oct 2): reminders first, suggestions are a bonus
+```
+1. Schedule in       →  2. Times              →  3. Reminder               →  4. Suggestion (optional)
+   manual entry OR       first class each          "Class at 10:00. Don't        only for buildings we know:
+   upload & parse        day, minus lead time      forget to pay for parking."   "Cheapest nearby: Lot 2, $3.75"
+```
+- **The reminder must always go out, even when no building is known.** A missing or unmatched building only removes the suggestion; it never blocks or crashes the reminder.
+- **Manual entry comes before the parser.** It doesn't need the Schedule Builder sample, and both produce the same list of classes, so the parser can be added later without changing anything downstream.
 
 ---
 
@@ -73,27 +86,66 @@ Sukhman switched to a **web app** because it's easier. Reminders come from the *
 - The main Overpass server (`overpass-api.de`) returned 406 errors. The mirror `overpass.kumi.systems` worked.
 
 ### Downloaded copies (in `data/`)
-- `ucd_parking_lots.geojson`: the 124 official lot outlines (main dataset, about 1 MB)
-- `taps_pay_stations.geojson`: TAPS layer 2
-- `taps_street_parking.geojson`: TAPS layer 4
+- `ucd_parking_lots.geojson`: the 124 official lot outlines with **all fields** (re-downloaded Oct 1; the first copy lacked `OBJECTID`/`GlobalID`)
+- `ucd_buildings.geojson`: **1,491 building outlines** (everything in layer 0 that isn't parking; added Oct 1). 124 + 1,491 = all 1,615 features.
+- `taps_pay_stations.geojson`: TAPS layer 2 (not used in version 1)
+- `taps_street_parking.geojson`: TAPS layer 4 (not used in version 1)
+- `zone_rates.csv`: the hand-entered price table (see Prices below)
+- The exact queries used (both against `.../base_facilities/FeatureServer/0/query`, with `outFields=*&outSR=4326&f=geojson`):
+  - lots: `where=type1_name='Transportation & Parking'`
+  - buildings: `where=type1_name<>'Transportation & Parking'`
+- `outSR=4326` asks for WGS84 latitude/longitude (what GPS, Leaflet and PostGIS use) instead of the server's Web Mercator metres.
+- **The GeoJSON files are kept exactly as downloaded.** All cleaning happens in the import script, so a re-download always gives the same result.
 
-### Prices: not in any dataset
-- The outlines tag each lot with a **zone**, not a price. Every lot in a zone costs the same, so prices go in a small table entered by hand, then joined to lots by zone.
-- Source: https://transportation.ucdavis.edu/types_and_rates. **The TAPS website blocks automated requests (403),** so prices must be copied by hand.
-- Prices change often: they went up on **Jan 1, 2026** (F +$0.25, A and C+ +$0.40, C/L/M +$0.50) and again on **July 1, 2026**. Store each price with the date it took effect.
-- Cheapest to most expensive: **L < C < C+ < A** (price rises closer to the campus core).
-- Older reference figures: in 2022 A was $4.60/day and C $3.50/day; visitors were $10/day or $1.50/hour near the Shrem museum. These are out of date.
-- Rules:
-  - Daily A is for faculty and career staff; students may use A only **after 5pm**.
-  - C+ spaces are inside A areas and open to students and employees.
-  - UC Davis affiliates get lower ParkMobile rates than visitors, if they sign up with their UCD email.
-  - Enforcement is **Mon–Fri, 7am–10pm**. Weekends and holidays only during posted special events.
-- F and M zones exist but aren't in the map data.
+### What checking the data found
+**Lots:**
+- `lat`/`lng` are empty for lots, and only 3 lots have a `pk_CAAN`. **Use `GlobalID` as the lot's stable ID** (`OBJECTID` can change if the university republishes).
+- `status`: 118 Existing, 3 **Restricted** (Lot 31 West/East/South), 3 **Under Construction** (Rice Lane, 3 pieces).
+- **71 lots have no name**: 64 Misc. and **7 L lots** (the cheapest zone). The app can't name these in a reminder until they're named by hand.
+- **"Lot 4" appears twice at the exact same distance**, probably a duplicate row. **"Lot 5" exists as both C+ and C** (two areas, one name), so always show the zone next to the name.
+- 2 lots are MultiPolygons (Valley Hall, 3 pieces; Garrod Street Parking West, 4 pieces); the rest are Polygons.
+- `description` says who may park: A = "Faculty and Staff Parking", C+ = "Faculty, Staff, and Student Parking", C and L = "Visitor, Student, Staff, and Faculty Parking".
+- Unnamed Misc. lots are often the closest "lots" to a building (e.g. the 3 nearest to Olson Hall), so they must be hidden from recommendations.
+
+**Buildings:**
+- Categories (`type1_name`): Other 733, Academic & Administration 382, Housing & Dining 283, Support 61, Athletics & Recreation 32.
+- **"Other" is mostly noise**: 138 blank names, 135 greenhouses, 134 animal/vet/agriculture, 73 sheds and barns, 32 trailers, 28 utilities, ~129 unclear (mostly cargo containers). About 64 halls/labs/field buildings could plausibly host a class.
+- Name matching must prefer Academic buildings: "Wellman" also matches "Grounds Shed Wellman" (Other).
+- 3 buildings are MultiPolygons (e.g. Goat Sheds, 12 pieces). Wellman Hall's CAAN is 4050.
+
+### Prices (FY 2026–27, effective July 1, 2026), stored in `data/zone_rates.csv`
+Copied by hand by Sukhman from https://transportation.ucdavis.edu/types_and_rates (the site blocks automated requests, HTTP 403).
+
+| Zone | Daily price | Who |
+|---|---|---|
+| A | $6.50 | Employees 7am–5pm; students after 5pm |
+| C+ | $6.50 | Employees and students |
+| C | $5.50 | Affiliate rate (students and staff) |
+| L | $3.75 | Affiliate rate |
+| F | $2.75 | Affiliate rate, **but no F lots are in the map data** |
+| M | $3.75 | **Motorcycles and mopeds only.** Left out on purpose |
+| CH | $21.50 | Chancellor's Office only. Left out |
+| Visitor | **$19.00 flat** | Non-affiliates: C, L and F anytime; **A and C+ after 5pm** and weekends during events |
+| EV | $4.00 add-on | Left out |
+| DSA (disabled) | $0.00 | Left out |
+
+- **C+ costs the same as A**, so it's never a "cheap" option. Cheapest to most expensive for students: **L < C < C+ = A**.
+- For visitors every zone costs $19, so only distance matters for them.
+- Prices change often: they went up on Jan 1, 2026 and again on July 1, 2026. Keep old rows as history and use `effective_from` (not used by the prototype yet, since there's only one price set).
+- Enforcement is **Mon–Fri, 7am–10pm**. Weekends and holidays only during posted special events.
+- UC Davis affiliates get lower ParkMobile rates than visitors, if they sign up with their UCD email.
 - Meter prices aren't available. Hourly parking is left out of version 1.
+
+### Street parking: version 2
+- TAPS layer 4 has 22 street segments: 10 "Restricted Access", 6 "L, C, Visitor Permit", 6 "C, Visitor Permit". So 12 are cheap parking.
+- Left for version 2 because: segments allow **several zones** (doesn't fit one `zone_code`), they **hold few cars** (recommending them risks sending everyone to a full street), they have **no names**, they're **lines not areas** (needs its own table or `ST_Buffer`), and the source is maintained separately from the official map.
+- "Garrod Street Parking West" (L) is already in the official lots data, so it's in version 1 anyway.
 
 ### Other gaps
 - **ParkMobile zone numbers per lot are not published.** They'd have to be collected from the signs at each lot.
+- **ParkMobile numbers are optional.** Without them the reminder just says "Pay in ParkMobile", and the ParkMobile app can find the zone from the phone's location.
 - **Schedule import:** Sukhman says Schedule Builder can print your schedule with classes and times. Plan: the user pastes the text from the print view and the app parses it. **Still needed:** a real sample (with personal details removed) to see the building-name format, e.g. "WELLMN" vs "Wellman Hall".
+- **Academic calendar:** the prototype uses **placeholder** Fall 2026 dates (Sep 23 – Dec 11; Veterans Day Nov 11; Thanksgiving Nov 26–27). Check them against the real UC Davis calendar.
 
 ---
 
@@ -107,6 +159,20 @@ Sukhman switched to a **web app** because it's easier. Reminders come from the *
 - **Distance:** straight-line distance to the **nearest edge** of the lot (PostGIS `ST_Distance`), not to its centre, because big structures skew the centre point. Real walking routes (OSRM, OpenRouteService) can come later.
 - **One reminder per day:** you pay a daily rate once and stay parked, so remind before the **first class** and pick a lot based on all of that day's buildings (e.g. the cheapest lot that keeps the longest walk under the limit).
 - Example reminder: *"Class at 10:00 in Wellman. Cheapest option: Lot 47 (C zone, $X), 7-minute walk. Pay in ParkMobile, zone ####."*
+- **Permission is checked at arrival time** (the first class), because you park once. Arriving at 8am means no A lots all day for a student, even with a 6pm class.
+- If no allowed lot is within the walk limit, fall back to the closest lot so the user still gets a suggestion.
+
+**First real results** (prototype, student, 10am, 10-minute limit):
+
+| Class building | Cheapest within 10 min | Closest | Saves per day |
+|---|---|---|---|
+| Olson Hall | Lot 2 (L), $3.75, 10 min | Lot 5 (C+), $6.50, 2 min | $2.75 |
+| Kemper Hall | Lot 2 (L), $3.75, 8 min | Lot 47 (C), $5.50, 2 min | $1.75 |
+| Shields Library | Lot 2 (L), $3.75, 9 min | Lot 5 (C+), $6.50, 3 min | $2.75 |
+| Wellman Hall | Quad Structure (C), $5.50, 4 min | Lot 15 (C+), $6.50, 3 min | $1.00 |
+| Giedt Hall | unnamed L lot, $3.75, 9 min | Pavilion Structure (C), $5.50, 3 min | $1.75 |
+
+$2.75/day over ~50 parking days is **about $140 a quarter**. Lot 2 for Olson is borderline (791 m ÷ 80 m/min = 9.9 min), so small distance errors can flip results near the limit.
 
 ---
 
@@ -196,8 +262,9 @@ Terms explained to the user: primary key (PK), foreign key (FK), one-to-many, ma
   - **Money is stored as whole cents** ($3.50 = 350) to avoid rounding errors.
   - No row for a zone and user type means that user can't park there.
   - Old rows are kept as price history.
-- **`lots`**: `id` PK, `source_id` UNIQUE (the campus map's ID, so re-imports don't duplicate), `name`, `zone_code` FK→zones (**nullable** for the 67 Misc. lots), `parkmobile_zone` (nullable, filled in by hand), `geom geometry(MultiPolygon, 4326)`
-- **`buildings`**: `id` PK, `caan` UNIQUE (the map's `pk_CAAN`), `name`, `aliases text[]` (schedule short names, e.g. WELLMN), `geom geometry(MultiPolygon, 4326)`
+- **`lots`**: `id` PK, `source_id` UNIQUE (**the map's `GlobalID`**, so re-imports don't duplicate), `name` (nullable: 71 lots have none), `zone_code` FK→zones (**nullable** for the 67 Misc. lots), **`status`** (`open`/`restricted`/`closed`), **`status_reason`** (nullable text, e.g. "Under construction"), `parkmobile_zone` (nullable, filled in by hand), `geom geometry(MultiPolygon, 4326)`
+  - Import maps `Existing` → open, `Restricted` → restricted, `Under Construction` → closed with reason "Under construction". Recommendations use `open` lots only. **Flag rather than delete**, so a lot can be reopened by changing one value.
+- **`buildings`**: `id` PK, `caan` UNIQUE (the map's `pk_CAAN`), `name`, **`category`** (from `type1_name`; the parser searches Academic first and falls back to the rest), `aliases text[]` (schedule short names, e.g. WELLMN), `geom geometry(MultiPolygon, 4326)`
 - **`terms`**: `id` PK, `name` ("Fall 2026"), `start_date`, `end_date`
 - **`closures`**: `date` PK, `reason` ("Thanksgiving")
 
@@ -216,6 +283,10 @@ Terms explained to the user: primary key (PK), foreign key (FK), one-to-many, ma
 - **Days as an array**, checked against `EXTRACT(ISODOW ...)`.
 - **Two links are nullable on purpose** (`lots.zone_code`, `schedule_entries.building_id`) because real data is messy. Keep the row and fix it later.
 - The only stored snapshot of a recommendation is `reminders_sent.lot_id`.
+- **Every shape is stored as MultiPolygon.** The source mixes Polygon and MultiPolygon, and a PostGIS column accepts one type, so the import wraps single Polygons with `ST_Multi`. This costs nothing noticeable: the work depends on the number of corner points, not the type.
+- **Measure in metres, not degrees.** `ST_Distance` on 4326 geometry returns degrees. Cast to geography: `ST_Distance(a.geom::geography, b.geom::geography)` returns metres.
+- **Add a GiST spatial index** on each `geom` column so Postgres can skip far-away shapes.
+- `zone_rates` answers both "may this user park here?" and "how much?": no row, or a time before `available_from`, means not allowed. Misc. lots have no zone, so no row, so they're excluded automatically.
 
 ---
 
@@ -235,29 +306,63 @@ Terms explained to the user: primary key (PK), foreign key (FK), one-to-many, ma
   - recommendation engine: one PostGIS query ranking allowed lots by price, then walking distance
   - reminder job: runs every 5 minutes; checks first class of the day, lead time, term dates, closures, and `reminders_sent` to avoid duplicates
   - senders: email first, push later
-  - import script: loads lots and buildings from the campus map service
+  - import script: loads lots and buildings from the campus map service, applying the cleaning rules:
+    - skip rows with blank names for buildings (lots keep theirs, flagged as unnamed)
+    - map lot `status` to open/restricted/closed with a reason
+    - turn `type2_name` into a zone code from a fixed list (A, C+, C, L); anything else becomes NULL
+    - wrap Polygons as MultiPolygons
+    - remove the duplicate "Lot 4"
+    - store `type1_name` as the building `category`
 - **Front end:**
-  - onboarding: pick student/staff/visitor → paste schedule → check parsed classes → confirm buildings
+  - onboarding: pick student/staff/visitor → enter classes manually (or paste schedule) → check classes → confirm buildings (optional)
   - map: lots coloured by price, class buildings, the recommended lot for each day
   - "cheapest near me" live mode (browser location while the page is open)
   - settings: walk limit, how early to remind, channels
 
-## 11. Suggested build order
-1. **Data:** set up Supabase + PostGIS, write `schema.sql`, write the import script, type in the price table
-2. **Recommendations:** the query plus a simple map page (useful before schedules exist)
-3. **Schedule:** the paste parser plus the building-name aliases
-4. **Reminders:** the scheduled job plus email
-5. **Extras:** web push, ParkMobile zone numbers, SMS
+## 11. Suggested build order (revised Oct 2: the reminder flow comes first)
+0. ~~Prototype the logic in plain Python~~ (done: section 14)
+1. **Setup:** install Python 3.13, create the Supabase project with PostGIS, write `schema.sql`, write the import script, load `zone_rates.csv`
+2. **Manual schedule entry:** Flask API for saving classes (building optional), tested with `curl` before any front end
+3. **Reminders:** the scheduled job plus email, using the logic from `reminders.py`
+4. **Suggestions:** the PostGIS recommendation query plus a simple map page
+5. **Schedule parser:** paste from Schedule Builder plus building-name aliases (needs the sample)
+6. **Extras:** web push, ParkMobile zone numbers, naming the 71 unnamed lots, street parking, SMS
 
 ## 12. Open items and next steps
-1. Sukhman reviews and **saves the schema board**. Read it and update the plan.
+1. Commit the prototype work (`zone_rates.csv`, `howfar.py`, `reminders.py`, this file).
 2. Get a **sample of the Schedule Builder print view** (personal details removed) to design the parser and aliases.
-3. Write `schema.sql`.
-4. Copy the current zone prices by hand from the rates page (Transportation Services blocks automated requests).
-5. Collect ParkMobile zone numbers from lot signs (lower priority).
-6. Check whether Schedule Builder can export a calendar file (.ics). Not confirmed.
+3. Get the **real Fall 2026 calendar** (first day, last day of finals, holidays) to replace the placeholders.
+4. Install Python 3.13, set up Supabase, write `schema.sql` with the changes in section 8.
+5. Read the **schema board** in case Sukhman saved edits there; it doesn't yet include the Oct 1–2 changes (GlobalID, status, category).
+6. Collect ParkMobile zone numbers from lot signs (lower priority).
+7. Check whether Schedule Builder can export a calendar file (.ics). Not confirmed.
+8. Small fixes noted: hide "saves $0.00" for visitors; use `effective_from` once a second price set exists; make `zone_letter` check a fixed list instead of the words "Permit Parking".
 
 ## 13. Housekeeping
 - The session started with a quick check on another repo (`include-davis`, branch `fix/opportunities-page`, commit "fixed opp page"). That isn't part of this project.
-- `C:\Users\cheem` (the whole user folder) is a git repo, almost certainly by accident. This `parking` project should get **its own git repo** before pushing to GitHub.
-- Sukhman is switching computers and will push this folder to their GitHub repo. The full chat history is not in the repo. It lives at `C:\Users\cheem\.claude\projects\c--Users-cheem-parking\f2a48dd7-69bf-4fba-af6e-e0d19d44210d.jsonl` (it contains personal info, so it should only go into a **private** repo, if at all).
+- The project now lives at `C:\Users\Cheem\PARKOS`, is **its own git repo** (branch `main`), and is pushed to https://github.com/Cheemasukh962/Park-OS.
+- Run `git pull` before starting work, especially after editing files on github.com. On Oct 2 a README edit made on GitHub caused a merge that opened `MERGE_MSG` in VS Code and blocked the terminal until the tab was closed. `git pull --no-edit` avoids the editor.
+- The full chat history from Sept 27–28 is not in the repo. It was at `C:\Users\cheem\.claude\projects\c--Users-cheem-parking\f2a48dd7-69bf-4fba-af6e-e0d19d44210d.jsonl` on the old computer (it contains personal info, so it should only go into a **private** repo, if at all).
+
+---
+
+## 14. Prototype code (plain Python, standard library only)
+Both files read `data/` relative to their own location, so they work on any computer. Run from the repo root.
+
+**`backend/howfar.py`: which lots can I use, and what do they cost?** (`python backend/howfar.py`)
+- `load` / `find` / `suggest`: read GeoJSON, find a feature by name ignoring capitals, suggest close names on a typo (`difflib`)
+- `distance`: closest pair of corners using the haversine formula, a rough stand-in for PostGIS `ST_Distance`
+- `lot_label`, `zone_letter`: name or "(unnamed, ID …)"; "C (Visitor) Permit Parking" → "C", Misc. → "?"
+- `load_rates` / `price_for(zone, affiliation, hour)`: reads `zone_rates.csv` into `{(zone, affiliation): (price_cents, from_hour)}`; returns the price or `None` if not allowed. Replaced the earlier hand-written `ALLOWED_ZONES`.
+- `nearest_lots` → `(metres, price, lot)` sorted by distance; `cheapest_within(ranked, limit)` picks by `(price, metres)`
+- Settings at the bottom: `BUILDING_NAME`, `AFFILIATION`, `CLASS_HOUR`. The test code is under `if __name__ == "__main__":` so other files can import the functions without running it.
+
+**`backend/reminders.py`: when to remind, and what to say** (`python backend/reminders.py`)
+- Hand-typed `SCHEDULE` (stand-in for manual entry or the parser; `building` may be `None`), placeholder `TERM_START`/`TERM_END`/`CLOSURES`, `AFFILIATION`, `LEAD_MINUTES = 30`
+- `skip_reason(day)`: outside the quarter, weekend or closure
+- `classes_on(day)`: that weekday's classes, earliest first
+- `best_lot(...)`: cheapest allowed lot where the day's **longest** walk is within the limit; falls back to the shortest walk
+- `plan_reminder(day)`: reminder time = first class − lead time; the message always includes the reminder and adds "Cheapest nearby: …" only for known buildings. A missing or misspelled building never blocks the reminder.
+- It **plans** reminders and prints them for a range of dates. Nothing is sent yet.
+
+What each piece becomes later: `SCHEDULE` → `schedule_entries`; calendar constants → `terms`/`closures`; settings → `users`/`reminder_settings`; the date loop → a job every 5 minutes that sends email and writes `reminders_sent`; the Python ranking loop → one PostGIS query.

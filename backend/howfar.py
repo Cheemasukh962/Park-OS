@@ -1,3 +1,4 @@
+import csv
 import difflib
 import json
 import math
@@ -6,6 +7,7 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent.parent / "data"
 
 WALK_METRES_PER_MIN = 80
+WALK_LIMIT_MIN = 10        # default walk limit (later: users.walk_limit_min)
 
 # 1. LOAD: read a GeoJSON file and return its list of features
 def load(filename):
@@ -50,17 +52,29 @@ def zone_letter(lot):
     zone_name = lot["properties"]["type2_name"]
     return zone_name.split()[0] if "Permit Parking" in zone_name else "?"
 
-# Who may park in which zone (preview of the zone_rates table)
-ALLOWED_ZONES = {
-    "student": {"C+", "C", "L"},
-    "staff":   {"A", "C+", "C", "L"},
-    "visitor": {"C", "L"},
-}
+# PRICES: read data/zone_rates.csv (preview of the zone_rates table)
+def load_rates():
+    # {("C", "student"): (550, 0), ("A", "student"): (650, 17), ...}
+    rates = {}
+    with open(DATA / "zone_rates.csv") as f:
+        for row in csv.DictReader(f):                      # each row becomes a dict keyed by the header
+            from_hour = int(row["available_from"][:2]) if row["available_from"] else 0   # "17:00" → 17
+            rates[(row["zone_code"], row["affiliation"])] = (int(row["price_cents"]), from_hour)
+    return rates
 
-def can_park(affiliation, zone, hour):
-    if affiliation == "student" and zone == "A" and hour >= 17:   # A opens to students at 5pm
-        return True
-    return zone in ALLOWED_ZONES[affiliation]
+RATES = load_rates()
+
+def price_for(zone, affiliation, hour):
+    # The price in cents, or None if this user can't park in this zone at this hour.
+    # No row in the table means not allowed, which also rules out Misc. lots ("?").
+    rate = RATES.get((zone, affiliation))
+    if rate is None:
+        return None
+    price_cents, from_hour = rate
+    return price_cents if hour >= from_hour else None
+
+def dollars(cents):
+    return f"${cents / 100:.2f}"                           # 375 → "$3.75"
 
 # 4. RANK: every open lot this user may park in, nearest first
 def nearest_lots(building, lots, affiliation, hour):
@@ -68,27 +82,46 @@ def nearest_lots(building, lots, affiliation, hour):
     for lot in lots:
         if lot["properties"]["status"] != "Existing":     # skip Restricted / Under Construction
             continue
-        if zone_letter(lot) == "?":                        # skip Misc. lots: unknown price and access
-            continue
-        if not can_park(affiliation, zone_letter(lot), hour):
+        price = price_for(zone_letter(lot), affiliation, hour)
+        if price is None:
             continue
         metres = distance(building, lot)
-        ranked.append((metres, lot))
-    ranked.sort(key=lambda pair: pair[0])                  # sort by the first item: metres
+        ranked.append((metres, price, lot))
+    ranked.sort(key=lambda item: item[0])                  # sort by the first item: metres
     return ranked
 
-# 5. RUN
-BUILDING_NAME = "Olson Hall"
-AFFILIATION = "student"   # "student", "staff" or "visitor"
-CLASS_HOUR = 10           # 24-hour clock, so 18 = 6pm
+def cheapest_within(ranked, walk_limit_min):
+    # Cheapest lot within the walk limit; ties go to the shorter walk
+    nearby = [item for item in ranked if item[0] / WALK_METRES_PER_MIN <= walk_limit_min]
+    if not nearby:
+        return None
+    return min(nearby, key=lambda item: (item[1], item[0]))   # compare price first, then metres
 
-buildings = load("ucd_buildings.geojson")
-lots = load("ucd_parking_lots.geojson")
+# 5. RUN (only when this file is run directly, not when another file imports it)
+if __name__ == "__main__":
+    BUILDING_NAME = "Olson Hall"
+    AFFILIATION = "student"   # "student", "staff" or "visitor"
+    CLASS_HOUR = 10           # 24-hour clock, so 18 = 6pm
 
-building = find(buildings, BUILDING_NAME)
-if building is None:
-    print(f'No building called "{BUILDING_NAME}". Did you mean: {suggest(buildings, BUILDING_NAME)}?')
-else:
-    print(f"Lots near {building['properties']['loc_name']} for a {AFFILIATION} at {CLASS_HOUR}:00:")
-    for rank, (metres, lot) in enumerate(nearest_lots(building, lots, AFFILIATION, CLASS_HOUR)[:10], start=1):
-        print(f"{rank:>3}. {lot_label(lot):<32} {zone_letter(lot):<3} {metres:>5.0f} m  {metres / WALK_METRES_PER_MIN:>3.0f} min")
+    buildings = load("ucd_buildings.geojson")
+    lots = load("ucd_parking_lots.geojson")
+
+    building = find(buildings, BUILDING_NAME)
+    if building is None:
+        print(f'No building called "{BUILDING_NAME}". Did you mean: {suggest(buildings, BUILDING_NAME)}?')
+    else:
+        ranked = nearest_lots(building, lots, AFFILIATION, CLASS_HOUR)
+
+        print(f"Lots near {building['properties']['loc_name']} for a {AFFILIATION} at {CLASS_HOUR}:00:")
+        for rank, (metres, price, lot) in enumerate(ranked[:10], start=1):
+            print(f"{rank:>3}. {lot_label(lot):<32} {zone_letter(lot):<3} {dollars(price):>6}  {metres:>5.0f} m  {metres / WALK_METRES_PER_MIN:>3.0f} min")
+
+        closest = ranked[0]
+        cheapest = cheapest_within(ranked, WALK_LIMIT_MIN)
+        print()
+        print(f"Closest:  {lot_label(closest[2])} ({zone_letter(closest[2])}, {dollars(closest[1])}), {closest[0] / WALK_METRES_PER_MIN:.0f} min walk")
+        if cheapest:
+            saving = closest[1] - cheapest[1]
+            print(f"Cheapest within {WALK_LIMIT_MIN} min: {lot_label(cheapest[2])} ({zone_letter(cheapest[2])}, {dollars(cheapest[1])}), "
+                  f"{cheapest[0] / WALK_METRES_PER_MIN:.0f} min walk, saves {dollars(saving)} a day")
+ 
