@@ -1,0 +1,10 @@
+{
+  "description": "This web application streamlines project requirements gathering by allowing users to ask questions and receive instant clarifications, enhancing collaboration and efficiency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
