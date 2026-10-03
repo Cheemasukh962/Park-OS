@@ -1,6 +1,6 @@
 # UC Davis Parking App: project context and conversation summary
 
-This file summarises the conversations (Sept 27–28 and Oct 1–2, 2026) between Sukhman and Claude Code, so work can continue on another computer. **Read all of it before doing anything.** Current stage: **prototyping the core logic in plain Python** (`backend/howfar.py`, `backend/reminders.py`, see section 14). No database, Flask or front end yet.
+This file summarises the conversations (Sept 27–28 and Oct 1–2, 2026) between Sukhman and Claude Code, so work can continue on another computer. **Read all of it before doing anything.** Current stage: **prototyping the core logic in plain Python** (`backend/howfar.py`, `backend/reminders.py`, see section 14), and a **front-end layout with mock data** in `frontend/` on the `frontend` branch (section 15). No database or Flask yet, and the front end doesn't talk to any back end yet. The front-end brief is `docs/PRD.md`.
 
 ---
 
@@ -161,6 +161,8 @@ Copied by hand by Sukhman from https://transportation.ucdavis.edu/types_and_rate
 - Example reminder: *"Class at 10:00 in Wellman. Cheapest option: Lot 47 (C zone, $X), 7-minute walk. Pay in ParkMobile, zone ####."*
 - **Permission is checked at arrival time** (the first class), because you park once. Arriving at 8am means no A lots all day for a student, even with a 6pm class.
 - If no allowed lot is within the walk limit, fall back to the closest lot so the user still gets a suggestion.
+- **Parking priority (Oct 3):** the user picks **Best** (default: cheapest within the walk limit, which is what the prototype does), **Cheapest** (ignore the walk limit) or **Closest** (shortest walk, any price). The front-end layout already has these as chips.
+- **"Use my location" uses the browser Geolocation API**, not Google. It's free with no key; the browser returns latitude/longitude while the page is open, and the back end ranks lots from that point with the same logic as from a building. **Google's Geocoding API is not needed**: it turns typed addresses into coordinates, a different job (Nominatim is the free option if address search is ever wanted). Google's Routes API could later replace straight-line walk estimates with real walking times. Location works only on HTTPS and only while the page is open, and it fits best when already near campus; the schedule-based suggestion stays the default for planning from home.
 
 **First real results** (prototype, student, 10am, 10-minute limit):
 
@@ -225,7 +227,8 @@ Explained step by step, using "cheapest parking near Wellman Hall":
 | Login | Flask-Login, or Supabase Auth |
 | Scheduled reminders | APScheduler (inside Flask) or cron; runs every 5 minutes in `America/Los_Angeles` |
 | Email | Resend or SendGrid |
-| Front end | HTML/CSS + JavaScript `fetch` (React maybe later) |
+| Front end | **React 19 + TypeScript + Vite + Tailwind v4** (decided Oct 3, when the Figma Make layout arrived), `fetch` for the API |
+| User location | Browser Geolocation API (no key) |
 | Map | Leaflet (or MapLibre) drawing GeoJSON; lots coloured by price |
 | Hosting | Render or Railway for Flask; Supabase for the database |
 
@@ -319,28 +322,75 @@ Terms explained to the user: primary key (PK), foreign key (FK), one-to-many, ma
   - "cheapest near me" live mode (browser location while the page is open)
   - settings: walk limit, how early to remind, channels
 
-## 11. Suggested build order (revised Oct 2: the reminder flow comes first)
-0. ~~Prototype the logic in plain Python~~ (done: section 14)
-1. **Setup:** install Python 3.13, create the Supabase project with PostGIS, write `schema.sql`, write the import script, load `zone_rates.csv`
-2. **Manual schedule entry:** Flask API for saving classes (building optional), tested with `curl` before any front end
-3. **Reminders:** the scheduled job plus email, using the logic from `reminders.py`
-4. **Suggestions:** the PostGIS recommendation query plus a simple map page
-5. **Schedule parser:** paste from Schedule Builder plus building-name aliases (needs the sample)
-6. **Extras:** web push, ParkMobile zone numbers, naming the 71 unnamed lots, street parking, SMS
+## 11. Build phases (agreed Oct 3: Flask before the database)
+
+**Where things stand (Oct 3):**
+
+| Layer | Done | Not done |
+|---|---|---|
+| Data | Lots, buildings, prices (`zone_rates.csv`) | Database (Supabase) |
+| Logic (Python) | Rank lots from a building, price and permission rules, "Best" pick, reminder planning | Rank from a location, Cheapest/Closest, building search |
+| API (Flask) | Nothing | Everything: the missing middle |
+| Front end | All screens with mock data (section 15) | Calling the API, real "Use my location", mock fixes, Leaflet map |
+| Reminders | Planning logic | Sending email on a schedule |
+
+**How the pieces connect:**
+```
+React (frontend/, port 8443)                  Flask (backend/, port 5000)             Logic + data
+  Map page: "Use my location" ──fetch──►  GET /api/recommendations?lat=..&lng=.. ──► rank lots from a point
+  Week page: day cards        ──fetch──►  GET /api/reminders/preview             ──► reminders.py
+  Grid step: save a class     ──fetch──►  POST /api/schedule                     ──► stored (file now, database later)
+  Buildings step: type-ahead  ──fetch──►  GET /api/buildings?q=well              ──► building search
+                              ◄──JSON───
+```
+In development two servers run at once; Vite's proxy forwards `/api/...` to Flask so the browser sees one site.
+
+**Phase 0: Prototype the logic** ~~done~~ (section 14).
+
+**Phase 1: Finish the logic (Python only, nothing to install)**
+- `nearest_lots_to_point(lat, lng, ...)` for geolocation (a point is a shape with one corner, so `distance` mostly works as is)
+- `priority`: best / cheapest / closest, matching the front-end chips (definitions in `docs/PRD.md` section 7)
+- `search_buildings("well")`: partial names, Academic buildings first ("Wellman Hall" before "Grounds Shed Wellman")
+
+**Phase 2: Flask API, no database yet**
+- Install Python 3.13, a virtual environment and Flask
+- `backend/app.py` with the endpoints in `docs/PRD.md` section 6. Each route is a thin wrapper: read the request, call the existing function, `jsonify` the result
+- Schedule and settings saved to a JSON file for now (about 20 lines of throwaway code)
+- Test every endpoint with `curl` before React touches it, so the raw JSON is visible
+
+**Phase 3: Connect the front end, one screen at a time** (on the `frontend` branch)
+1. Vite proxy plus `src/api.ts` with a TypeScript type per JSON shape
+2. Map page: real ranked lots plus **"Use my location"** (geolocation end to end)
+3. Buildings step: type-ahead
+4. Grid step: saving classes (fix 0-based days and "am/pm" times here)
+5. Week page: real reminder preview
+6. Settings
+
+**Phase 4: Database.** Supabase + PostGIS, `schema.sql` (section 8), import script with the cleaning rules (section 10). Swap the JSON file for Postgres and the Python distance loop for a PostGIS query. **The front end doesn't change**, because the API returns the same JSON.
+
+**Phase 5: Real reminders.** Scheduled job every 5 minutes, email via Resend, `reminders_sent` to prevent duplicates.
+
+**Phase 6: Accounts and deployment.** Real login (the layout's login screen accepts anything today), then hosting (Render/Railway + Supabase).
+
+**Later:** Schedule Builder parser (needs the sample), Leaflet map, web push, naming the 71 unnamed lots, ParkMobile zone numbers, street parking, SMS.
+
+**Why Flask before the database:** a working full-stack loop (click in React → Flask → real lot data) arrives within a couple of sessions instead of after all the database setup, and Sukhman learns one new layer at a time (API first, then database). The cost is a little throwaway file-storage code.
 
 ## 12. Open items and next steps
-1. Commit the prototype work (`zone_rates.csv`, `howfar.py`, `reminders.py`, this file).
-2. Get a **sample of the Schedule Builder print view** (personal details removed) to design the parser and aliases.
-3. Get the **real Fall 2026 calendar** (first day, last day of finals, holidays) to replace the placeholders.
-4. Install Python 3.13, set up Supabase, write `schema.sql` with the changes in section 8.
-5. Read the **schema board** in case Sukhman saved edits there; it doesn't yet include the Oct 1–2 changes (GlobalID, status, category).
-6. Collect ParkMobile zone numbers from lot signs (lower priority).
-7. Check whether Schedule Builder can export a calendar file (.ics). Not confirmed.
-8. Small fixes noted: hide "saves $0.00" for visitors; use `effective_from` once a second price set exists; make `zone_letter` check a fixed list instead of the words "Permit Parking".
+1. **Next: Phase 1** (show a tested preview before changing files).
+2. Commit `docs/PRD.md` (on the `frontend` branch, still uncommitted as of Oct 3).
+3. Fix the front-end mock data: Lot 10 is A (not C), Lot 30 is C (not L); see PRD section 6 for the format mismatches (0-based days, "10:00 am" times, price strings).
+4. Get a **sample of the Schedule Builder print view** (personal details removed) to design the parser and aliases.
+5. Get the **real Fall 2026 calendar** (first day, last day of finals, holidays) to replace the placeholders.
+6. Read the **schema board** before Phase 4, in case Sukhman saved edits there; it doesn't yet include the Oct 1–2 changes (GlobalID, status, category).
+7. Collect ParkMobile zone numbers from lot signs (lower priority).
+8. Check whether Schedule Builder can export a calendar file (.ics). Not confirmed.
+9. Small fixes noted: hide "saves $0.00" for visitors; use `effective_from` once a second price set exists; make `zone_letter` check a fixed list instead of the words "Permit Parking".
 
 ## 13. Housekeeping
 - The session started with a quick check on another repo (`include-davis`, branch `fix/opportunities-page`, commit "fixed opp page"). That isn't part of this project.
-- The project now lives at `C:\Users\Cheem\PARKOS`, is **its own git repo** (branch `main`), and is pushed to https://github.com/Cheemasukh962/Park-OS.
+- The project now lives at `C:\Users\Cheem\PARKOS`, is **its own git repo**, and is pushed to https://github.com/Cheemasukh962/Park-OS.
+- **Branches:** `main` (back-end prototypes and data) and `frontend` (created Oct 3 from `main`; adds `frontend/`). Front-end work goes on `frontend` and is merged into `main` later.
 - Run `git pull` before starting work, especially after editing files on github.com. On Oct 2 a README edit made on GitHub caused a merge that opened `MERGE_MSG` in VS Code and blocked the terminal until the tab was closed. `git pull --no-edit` avoids the editor.
 - The full chat history from Sept 27–28 is not in the repo. It was at `C:\Users\cheem\.claude\projects\c--Users-cheem-parking\f2a48dd7-69bf-4fba-af6e-e0d19d44210d.jsonl` on the old computer (it contains personal info, so it should only go into a **private** repo, if at all).
 
@@ -366,3 +416,13 @@ Both files read `data/` relative to their own location, so they work on any comp
 - It **plans** reminders and prints them for a range of dates. Nothing is sent yet.
 
 What each piece becomes later: `SCHEDULE` → `schedule_entries`; calendar constants → `terms`/`closures`; settings → `users`/`reminder_settings`; the date loop → a job every 5 minutes that sends email and writes `reminders_sent`; the Python ranking loop → one PostGIS query.
+
+---
+
+## 15. Front end (`frontend/`, on the `frontend` branch)
+- Built by Sukhman with Figma Make, kept in a separate repo (https://github.com/Cheemasukh962/BuildPRDDocument), then copied into `frontend/` here as commit "basic layout done" (Oct 3). `parkos-source.zip` from that repo was left out: it's a byte-for-byte copy of the same source (ignoring line endings) and its Git LFS pointer was broken.
+- **Stack:** React 19, TypeScript, Vite 8, Tailwind CSS v4, Node 22 + pnpm (`cd frontend`, `pnpm install`, `pnpm dev`, port 8443). `frontend/CLAUDE.md` loads Figma's `AGENTS.md`; its claim that a dev server is "already running" only applies inside Figma Make. `vite.config.ts` reads `.figma/make/site.json`, so that folder must stay.
+- **Everything is in `src/App.tsx`** (~1,000 lines), switched by a `screen` state: welcome → login → role → method (manual / upload) → grid (week grid + class editor) → buildings → main app: week (day cards), edit-reminders, schedule, map, settings. Colours: UC Davis navy `#022851`, blue `#13639E`, gold `#FFBF00`.
+- **All data is hard-coded mock data**; nothing calls an API. The map is a static drawing, not Leaflet. Login accepts anything.
+- The day cards and map already have **Best / Cheapest / Closest** chips and a **"Use my location"** button (not wired up).
+- **Mock data differs from the planned API** (details in `docs/PRD.md` section 6): days are 0-based (0 = Monday) instead of ISO 1–7, times are "10:00 am" instead of "10:00", prices are strings instead of cents, and two lots have the wrong zone (Lot 10 is A, Lot 30 is C).
