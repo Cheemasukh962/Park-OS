@@ -82,7 +82,10 @@ export type ReminderDay =
   | {
       date: string;
       remind_at: string;                                   // "09:30"
-      first_class: { course: string; start: string; building_name: string | null };
+      /** null on a day without classes that has a reminder the user added */
+      first_class: { course: string; start: string; building_name: string | null } | null;
+      /** true when the user chose this time (it replaces the automatic one) */
+      custom: boolean;
       message: string;
       suggestion: (LotPick & { closest: LotPick; picks: Record<Priority, LotPick> }) | null;
     };

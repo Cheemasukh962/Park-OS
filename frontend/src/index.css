@@ -435,7 +435,7 @@ button:focus-visible, input:focus-visible, label:has(input:focus-visible) {
 .summary-icon { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; background: var(--blue-30); }
 .summary-icon.gold { background: var(--gold); font: 700 18px "Overpass Mono"; }
 .summary-strip p { margin-left: auto; color: var(--blue-80); font-size: 13px; }
-.day-card-grid { display: grid; grid-template-columns: repeat(5, minmax(220px,1fr)); gap: 14px; }
+.day-card-grid { display: grid; grid-template-columns: repeat(5, minmax(200px,1fr)) repeat(2, minmax(160px,.8fr)); gap: 14px; overflow-x: auto; padding-bottom: 4px; }
 .day-card { min-width: 0; min-height: 470px; background: white; border: 1px solid var(--blue-40); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; }
 .day-card-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; font-size: 14px; }
 .day-card-heading strong { font-size: 19px; }
@@ -728,3 +728,21 @@ button.ranked-lot:hover { background: var(--blue-20); }
 @media (max-width: 767px) { .role-grid { grid-template-columns: 1fr; } }   /* same phone breakpoint as the rest */
 .pick-label { font-style: normal; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--blue-80); margin-bottom: 2px; }
 .limit-note.muted { color: var(--blue-80); }
+
+/* ---- ParkOS: editable reminder times and one-off reminders ---- */
+.time-button { display: flex; align-items: baseline; gap: 8px; border: 0; background: transparent; padding: 0; color: var(--navy); cursor: pointer; text-align: left; }
+.time-button:disabled { cursor: default; }
+.time-button .big-time { margin-bottom: 12px; }
+.time-button:not(:disabled):hover .big-time { text-decoration: underline dotted; text-underline-offset: 6px; }
+.time-edit-hint { font-size: 11px; font-weight: 700; color: var(--blue-80); border: 1px solid var(--blue-60); border-radius: 999px; padding: 1px 8px; }
+.custom-badge { font-style: normal; margin-left: 8px; background: var(--gold-30); border: 1px solid var(--gold); color: var(--navy); border-radius: 999px; padding: 0 7px; font-size: 10px; letter-spacing: 0; text-transform: none; }
+.reminder-editor { background: var(--blue-20); border: 1px solid var(--blue-40); border-radius: 10px; padding: 12px; margin: 4px 0 12px; }
+.reminder-editor .field { margin-bottom: 10px; }
+.reminder-editor-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+.add-reminder-button { margin-top: 12px; border: 1px dashed var(--blue-60); background: white; color: var(--navy); border-radius: 8px; padding: 8px 12px; font-weight: 700; cursor: pointer; }
+.add-reminder-button:hover { border-color: var(--navy); background: var(--blue-30); }
+.add-reminder-panel { width: 380px; max-width: 100%; height: auto !important; align-self: flex-start; }
+.field input[type="date"], .field input[type="time"] { font: inherit; }
+.day-card.weekend { background: var(--blue-20); }
+button.settings-row.settings-link { width: 100%; border: 0; border-top: 1px solid var(--blue-40); padding: 0; background: transparent; font: inherit; color: var(--navy); cursor: pointer; text-align: left; }
+button.settings-row.settings-link:hover { background: var(--blue-20); }

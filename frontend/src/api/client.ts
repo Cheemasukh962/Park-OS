@@ -101,6 +101,17 @@ export function reminderPreview(from: string, to: string, leadMinutes?: number):
   return request<ReminderPreview>(`/api/reminders/preview?from=${from}&to=${to}${lead}`);
 }
 
+/** Set this day's reminder time yourself ("HH:MM"). On a class day it replaces the automatic time;
+ *  on any other day (weekend, holiday) it creates a reminder. */
+export function setCustomReminder(date: string, remindAt: string): Promise<{ date: string; remind_at: string }> {
+  return sendJson(`/api/reminders/custom/${date}`, "PUT", { remind_at: remindAt });
+}
+
+/** Remove a custom time: the day goes back to its automatic reminder (or none). */
+export function clearCustomReminder(date: string): Promise<void> {
+  return request<void>(`/api/reminders/custom/${date}`, { method: "DELETE" });
+}
+
 // --- Map: lots, recommendations and routes ---
 
 export function getLots(): Promise<LotsGeoJson> {

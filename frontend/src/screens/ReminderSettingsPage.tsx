@@ -87,8 +87,12 @@ export function ReminderSettingsPage({ settings, saveSettings, onDone }: Props) 
               <div className="preview-icon"><Icon name="mail" size={28} /></div>
               <span className="preview-time">{previewTime?.split(" ")[0]} <small>{previewTime?.split(" ")[1]}</small></span>
               <Heading level={2}>Time to think about parking.</Heading>
-              <p>Your first class is {next.first_class.course} at {formatTime(next.first_class.start)}
-                {next.first_class.building_name ? ` in ${next.first_class.building_name}` : ""}.</p>
+              {next.first_class ? (
+                <p>Your first class is {next.first_class.course} at {formatTime(next.first_class.start)}
+                  {next.first_class.building_name ? ` in ${next.first_class.building_name}` : ""}.</p>
+              ) : (
+                <p>This is a reminder you added for a day without classes.</p>
+              )}
               {tip && (
                 <div className="preview-lot">
                   <ZonePlate zone={tip.zone} />

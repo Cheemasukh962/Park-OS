@@ -18,12 +18,10 @@ export function addDays(date: Date, days: number): Date {
   return copy;
 }
 
-/** The Monday of the week to show: this week, or next week if it's already the weekend. */
-export function currentPlanningMonday(today = new Date()): Date {
-  const weekday = today.getDay();                       // 0 = Sunday ... 6 = Saturday
-  if (weekday === 0) return addDays(today, 1);
-  if (weekday === 6) return addDays(today, 2);
-  return addDays(today, 1 - weekday);
+/** The Monday of the week a date is in (weeks run Monday to Sunday). */
+export function mondayOf(date: Date): Date {
+  const weekday = date.getDay() === 0 ? 7 : date.getDay();   // JS: 0 = Sunday; we want Sunday = 7
+  return addDays(date, 1 - weekday);
 }
 
 /** Date → "Mon" / "Oct 5" */

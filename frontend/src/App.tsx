@@ -11,6 +11,7 @@ import { UploadStep } from "./screens/onboarding/UploadStep";
 import { MapPage } from "./screens/MapPage";
 import { ReminderSettingsPage } from "./screens/ReminderSettingsPage";
 import { SchedulePage } from "./screens/SchedulePage";
+import { SettingsPage } from "./screens/SettingsPage";
 import { WeekPage } from "./screens/WeekPage";
 
 type Screen =
@@ -280,39 +281,6 @@ function AppShell({
   );
 }
 
-function Toggle({ checked = true }: { checked?: boolean }) {
-  const [on, setOn] = useState(checked);
-  return <button className={`toggle ${on ? "on" : ""}`} role="switch" aria-checked={on} onClick={() => setOn(!on)}><span /></button>;
-}
-
-function SettingsPage() {
-  const [saved, setSaved] = useState(false);
-  const save = () => { setSaved(true); window.setTimeout(() => setSaved(false), 1800); };
-  return (
-    <>
-      <div className="page-header"><div><span className="eyebrow">Make ParkOS yours</span><Heading>Settings</Heading><p>Changes save as you make them.</p></div></div>
-      <div className="settings-layout" onClick={save}>
-        <section className="settings-card">
-          <div className="settings-heading"><span className="settings-icon"><Icon name="mail" /></span><div><Heading level={2}>Reminders</Heading><p>One email before your first class.</p></div></div>
-          <div className="settings-row"><span><strong>Daily reminders</strong><small>Weekdays with an on-campus class</small></span><Toggle /></div>
-          <div className="settings-row"><span><strong>Email</strong><small>Where your reminders go</small></span><span className="setting-value">student@ucdavis.edu <Icon name="chevron" /></span></div>
-          <div className="settings-row"><span><strong>Lead time</strong><small>Before your first class</small></span><span className="setting-value">30 minutes <Icon name="chevron" /></span></div>
-          <div className="settings-row"><span><strong>Walk limit</strong><small>For your Best parking option</small></span><span className="setting-value">10 minutes <Icon name="chevron" /></span></div>
-        </section>
-        <section className="settings-card">
-          <div className="settings-heading"><span className="settings-icon"><Icon name="user" /></span><div><Heading level={2}>About you</Heading><p>Used to find the lots you're allowed to use.</p></div></div>
-          <div className="settings-row"><span><strong>Affiliation</strong><small>Parking access and prices</small></span><span className="setting-value">Student <Icon name="chevron" /></span></div>
-        </section>
-        <section className="settings-card">
-          <div className="settings-heading"><span className="settings-icon"><Icon name="calendar" /></span><div><Heading level={2}>Schedule</Heading><p>3 classes across 5 weekdays.</p></div></div>
-          <div className="settings-buttons"><Button variant="secondary" icon="upload">Upload a new schedule</Button><Button variant="ghost">Clear everything</Button></div>
-        </section>
-      </div>
-      {saved && <div className="toast"><Icon name="check" /> Saved</div>}
-    </>
-  );
-}
-
 export default function App() {
   const [screen, setScreen] = useState<Screen>("welcome");
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -356,15 +324,17 @@ export default function App() {
     <AppShell screen={screen} navigate={setScreen} settings={settings}>
       {!settings && <p className="form-error" role="alert">Can't reach the ParkOS server. Is it running on port 5000?</p>}
       {screen === "week" && settings && (
-        <WeekPage settings={settings} setRemindersEnabled={(on) => saveSettings({ reminders_enabled: on })}
-                  editReminders={() => setScreen("edit-reminders")} />
+        <WeekPage settings={settings} saveSettings={saveSettings} editReminders={() => setScreen("edit-reminders")} />
       )}
       {screen === "edit-reminders" && settings && (
         <ReminderSettingsPage settings={settings} saveSettings={saveSettings} onDone={() => setScreen("week")} />
       )}
       {screen === "schedule" && <SchedulePage uploadSchedule={() => setScreen("upload")} />}
       {screen === "map" && <MapPage defaultPriority={settings?.priority ?? "best"} />}
-      {screen === "settings" && <SettingsPage />}
+      {screen === "settings" && settings && (
+        <SettingsPage settings={settings} saveSettings={saveSettings}
+                      editEmail={() => setScreen("edit-reminders")} uploadSchedule={() => setScreen("upload")} />
+      )}
     </AppShell>
   );
 }
