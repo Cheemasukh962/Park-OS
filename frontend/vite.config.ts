@@ -39,6 +39,11 @@ react(),
           '**/.figma/**',
 ],
       },
+      // ParkOS: send /api/... requests to the Flask server, so the browser sees one site
+      // (run it with: .venv\Scripts\python backend\app.py)
+      proxy: {
+        '/api': 'http://localhost:5000',
+      },
     },
     preview: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
