@@ -16,3 +16,6 @@ backend/routes_cache.json
 
 # Real schedule exports (contain names and student IDs): never commit
 data/samples/
+
+# Notes for Claude Code: kept on this computer only
+/CLAUDE.md
