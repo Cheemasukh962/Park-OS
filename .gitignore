@@ -6,6 +6,7 @@ __pycache__/
 
 # Local test data written by backend/app.py (replaced by Postgres in Phase 4)
 backend/store.json
+backend/store.json.tmp
 
 # Secrets: the Google Maps API key lives here, never in git
 .env

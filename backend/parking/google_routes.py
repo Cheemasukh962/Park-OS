@@ -11,21 +11,18 @@ Our own distance is a straight line. Google follows real paths and roads: walks 
   straight-line estimate. A reminder or recommendation never breaks because of Google.
 """
 import json
-import os
 import urllib.error
 import urllib.request
 from datetime import date
 from pathlib import Path
 
-from dotenv import load_dotenv
-
+from config import GOOGLE_MAPS_API_KEY
 from parking.data import feature_id
 from parking.geo import centre, nearest_corner
 from parking.ranking import WALK_METRES_PER_MIN
 
 BACKEND = Path(__file__).resolve().parents[1]     # backend/parking/google_routes.py → backend/
-load_dotenv(BACKEND / ".env")                     # puts GOOGLE_MAPS_API_KEY into os.environ
-API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
+API_KEY = GOOGLE_MAPS_API_KEY                      # from backend/.env, via config.py
 
 MATRIX_URL = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
 ROUTE_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"

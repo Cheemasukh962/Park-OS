@@ -32,5 +32,16 @@ def price_for(zone, affiliation, hour):
     return price_cents if hour >= from_hour else None
 
 
+def access_note(zone, affiliation):
+    # A short note when a zone is only open to this user part of the day, built from the rate table
+    # itself so it can never disagree with price_for(): ("A", "student") → "A: students after 5 pm"
+    rate = RATES.get((zone, affiliation))
+    if rate is None or rate[1] == 0:
+        return None
+    hour = rate[1]
+    clock = f"{hour % 12 or 12} {'pm' if hour >= 12 else 'am'}"
+    return f"{zone}: {affiliation}s after {clock}"
+
+
 def dollars(cents):
     return f"${cents / 100:.2f}"                           # 375 → "$3.75"

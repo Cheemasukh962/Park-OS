@@ -5,6 +5,8 @@ take or return a plain point use (lat, lng), the order people and Google use, an
 """
 import math
 
+CAMPUS_CENTRE = (38.5382, -121.7617)          # (lat, lng), roughly the Quad
+
 
 def make_point(lat, lng):
     # The user's location from the browser, shaped like a GeoJSON feature so the
@@ -44,3 +46,8 @@ def nearest_corner(feature, target):
     # roughly where you'd walk out of a lot towards your class
     lng, lat = min(corners(feature["geometry"]), key=lambda p: metres_between(p, [target[1], target[0]]))
     return lat, lng
+
+
+def km_from_campus(point):
+    # A (lat, lng) point's straight-line distance from campus, in km
+    return metres_between([point[1], point[0]], [CAMPUS_CENTRE[1], CAMPUS_CENTRE[0]]) / 1000

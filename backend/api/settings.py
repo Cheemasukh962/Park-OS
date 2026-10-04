@@ -2,7 +2,7 @@
 from flask import Blueprint, jsonify, request
 
 from api.errors import BadRequest
-from api.store import read_store, write_store
+from api.store import edit_store, read_store
 from parking.prices import AFFILIATIONS
 from parking.ranking import PRIORITIES
 
@@ -35,7 +35,7 @@ def update_settings():
             raise BadRequest(f"unknown setting: {key}")
         if not CHECKS[key](value):
             raise BadRequest(f"invalid value for {key}: {value!r}")
-    store = read_store()
-    store["settings"].update(body)                      # only the keys sent are changed
-    write_store(store)
-    return jsonify(store["settings"])
+    with edit_store() as store:
+        store["settings"].update(body)                  # only the keys sent are changed
+        settings = dict(store["settings"])
+    return jsonify(settings)

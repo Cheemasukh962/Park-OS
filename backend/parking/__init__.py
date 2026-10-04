@@ -7,6 +7,7 @@
     ranking.py            ranking lots by walk, and the Best / Cheapest / Closest picks
     trips.py              picking a lot for a drive + walk trip
     google_routes.py      real walking/driving times and route shapes from Google
+    arrival.py            when you arrive to park (class start minus 20 min), shared by reminders and the map
     academic_calendar.py  quarter dates and holidays
     reminders.py          planning one day's parking reminder
 """

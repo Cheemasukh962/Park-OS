@@ -9,11 +9,13 @@ from parking.ranking import nearest_lots
 class WalkTable:
     def __init__(self, buildings, lots, affiliation, walk_limit_min):
         # Ask Google (or the cache) once per building, for the lots near it.
-        # hour=23 covers every lot this user could ever use, so later classes are included too
+        # hour=23 covers every lot this user could ever use (A lots open to students after 5 pm),
+        # which is up to ~35 lots within reach, so ask about 40: with only 25, nearby C lots got
+        # crowded out by A lots and fell back to estimates. Each answer is cached for good.
         self.real = {}                                       # (building id, lot id) → (seconds, route metres)
         for building in buildings:
             candidates = nearest_lots(building, lots, affiliation, 23)
-            answers = real_walks(building, f"b{feature_id(building)}", candidates, walk_limit_min)
+            answers = real_walks(building, f"b{feature_id(building)}", candidates, walk_limit_min, max_lots=40)
             for lot_id, answer in answers.items():
                 self.real[(feature_id(building), lot_id)] = answer
 
