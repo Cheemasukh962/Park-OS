@@ -7,6 +7,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request
 
+from api.auth import current_user_id
 from api.errors import BadRequest
 from api.params import building_param, int_param, location_key, location_param
 from api.planning import saved_schedule
@@ -29,7 +30,7 @@ FAR_FROM_CAMPUS_KM = 30        # beyond this, warn that drive times will be long
 def recommendations():
     """From a class building (walk), from the user's location (drive), or both
     (drive there, then walk to class). Picks use Google's real times when available."""
-    settings = read_store()["settings"]
+    settings = read_store(current_user_id())["settings"]
     affiliation = request.args.get("affiliation", settings["affiliation"])
     if affiliation not in AFFILIATIONS:
         raise BadRequest(f"affiliation must be one of {AFFILIATIONS}")
@@ -85,7 +86,7 @@ def arrival_for(building):
             raise BadRequest("hour must be 0-23")
         return {"hour": hour, "reason": "given"}
     if building is not None:
-        upcoming = next_class_at(saved_schedule(read_store()), feature_id(building))
+        upcoming = next_class_at(saved_schedule(read_store(current_user_id())),feature_id(building))
         if upcoming:
             day, entry = upcoming
             return {"hour": arrival_time(day, entry["start"]).hour, "reason": "next class",

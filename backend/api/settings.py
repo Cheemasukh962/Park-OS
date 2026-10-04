@@ -1,8 +1,11 @@
 """The user's settings. PUT sends only the keys being changed, e.g. {"lead_minutes": 45}."""
+import re
+
 from flask import Blueprint, jsonify, request
 
+from api.auth import current_user_id
 from api.errors import BadRequest
-from api.store import edit_store, read_store
+from db.settings import get_settings as load_settings, update_settings as save_settings
 from parking.prices import AFFILIATIONS
 from parking.ranking import PRIORITIES
 
@@ -16,13 +19,14 @@ CHECKS = {
     "priority": lambda v: v in PRIORITIES,
     "reminders_enabled": lambda v: isinstance(v, bool),
     "channel": lambda v: v == "email",                  # push comes later
-    "email": lambda v: isinstance(v, str),
+    # empty (no reminder emails yet), or something shaped like an email
+    "email": lambda v: isinstance(v, str) and (v == "" or (len(v) <= 254 and re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", v))),
 }
 
 
 @bp.get("/api/settings")
 def get_settings():
-    return jsonify(read_store()["settings"])
+    return jsonify(load_settings(current_user_id()))
 
 
 @bp.put("/api/settings")
@@ -35,7 +39,4 @@ def update_settings():
             raise BadRequest(f"unknown setting: {key}")
         if not CHECKS[key](value):
             raise BadRequest(f"invalid value for {key}: {value!r}")
-    with edit_store() as store:
-        store["settings"].update(body)                  # only the keys sent are changed
-        settings = dict(store["settings"])
-    return jsonify(settings)
+    return jsonify(save_settings(current_user_id(), body))        # only the keys sent are changed

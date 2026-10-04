@@ -10,19 +10,20 @@
 
 -- ===== Accounts =============================================================================
 
--- One row per account. Users sign up with a username and password.
+-- One row per account. Users sign up with an email and password.
 -- The password itself is NEVER stored: only a slow, salted hash (werkzeug's scrypt), which can
 -- check a password but can't be turned back into one.
 CREATE TABLE users (
     id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    username      text NOT NULL CHECK (username ~ '^[A-Za-z0-9_.]{3,30}$'),   -- 3-30 letters, digits, _ or .
+    email         text NOT NULL CHECK (length(email) <= 254 AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
     password_hash text NOT NULL,
     created_at    timestamptz NOT NULL DEFAULT now()
 );
--- Unique ignoring capitals: "Sukhman" and "sukhman" can't both exist
-CREATE UNIQUE INDEX users_username_unique ON users (lower(username));
+-- Unique ignoring capitals: "Sukhman@ucdavis.edu" and "sukhman@ucdavis.edu" are the same account
+CREATE UNIQUE INDEX users_email_unique ON users (lower(email));
 
 -- One-to-one with users: user_id is both the primary key and the link, so each user has at most one row.
+-- email here is where reminders go: it starts as the sign-in email and can be changed separately.
 -- lead_minutes and walk_limit_min aren't shown in the app right now; they keep their defaults.
 CREATE TABLE user_settings (
     user_id           bigint PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,

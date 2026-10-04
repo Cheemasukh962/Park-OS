@@ -9,11 +9,14 @@ DELETE /api/schedule/<id>   remove one → 204 No Content
 """
 from flask import Blueprint, jsonify, request
 
+from api.auth import current_user_id
 from api.errors import BadRequest
 from api.params import parse_hhmm
 from api.shapes import entry_json
-from api.store import edit_store, read_store
+from db import schedule as db
 from parking.data import BUILDINGS_BY_ID
+
+MAX_COURSE = 80        # the database refuses longer names
 
 bp = Blueprint("schedule", __name__)
 
@@ -22,7 +25,7 @@ def validate_entry(body):
     # Check a class sent by the front end, and return the clean version to save
     if not isinstance(body, dict):
         raise BadRequest("send a JSON object")
-    course = str(body.get("course", "")).strip()
+    course = str(body.get("course", "")).strip()[:MAX_COURSE]
     days = body.get("days")
     start, end = body.get("start"), body.get("end")
     building_id = body.get("building_id")
@@ -55,16 +58,12 @@ def check_class():
 
 @bp.get("/api/schedule")
 def list_classes():
-    return jsonify([entry_json(e) for e in read_store()["schedule"]])
+    return jsonify([entry_json(e) for e in db.list_entries(current_user_id())])
 
 
 @bp.post("/api/schedule")
 def add_class():
-    entry = validate_entry(request.get_json(silent=True))          # check first, outside the lock
-    with edit_store() as store:
-        entry = {"id": store["next_id"], **entry}
-        store["schedule"].append(entry)
-        store["next_id"] += 1
+    entry = db.add_entry(current_user_id(), validate_entry(request.get_json(silent=True)))
     return jsonify(entry_json(entry)), 201
 
 
@@ -76,32 +75,20 @@ def replace_classes():
     if not isinstance(body, list):
         raise BadRequest("send a JSON list of classes")
     entries = [validate_entry(item) for item in body]              # all valid, or nothing is saved
-    with edit_store() as store:
-        store["schedule"] = []
-        for entry in entries:
-            store["schedule"].append({"id": store["next_id"], **entry})
-            store["next_id"] += 1
-        saved = list(store["schedule"])
+    saved = db.replace_entries(current_user_id(), entries)
     return jsonify([entry_json(e) for e in saved])
 
 
 @bp.put("/api/schedule/<int:entry_id>")
 def update_class(entry_id):
-    entry = validate_entry(request.get_json(silent=True))
-    with edit_store() as store:
-        for index, current in enumerate(store["schedule"]):
-            if current["id"] == entry_id:
-                store["schedule"][index] = {"id": entry_id, **entry}
-                return jsonify(entry_json(store["schedule"][index]))
-    return jsonify({"error": f"no class with id {entry_id}"}), 404
+    entry = db.update_entry(current_user_id(), entry_id, validate_entry(request.get_json(silent=True)))
+    if entry is None:
+        return jsonify({"error": f"no class with id {entry_id}"}), 404
+    return jsonify(entry_json(entry))
 
 
 @bp.delete("/api/schedule/<int:entry_id>")
 def delete_class(entry_id):
-    with edit_store() as store:
-        kept = [e for e in store["schedule"] if e["id"] != entry_id]
-        found = len(kept) < len(store["schedule"])
-        store["schedule"] = kept
-    if not found:
+    if not db.delete_entry(current_user_id(), entry_id):
         return jsonify({"error": f"no class with id {entry_id}"}), 404
     return "", 204

@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { OnboardingShell } from "./components/OnboardingShell";
-import { getSettings, updateSettings } from "./api/client";
+import { currentUser, getSettings, login, logout, signup, updateSettings } from "./api/client";
 import type { Affiliation, ImportResult, Settings } from "./api/types";
 import { Button, Field, Heading, Icon, type IconName, Logo, ZonePlate } from "./components/ui";
 import { type DraftClass, toDraft } from "./lib/schedule";
@@ -76,14 +76,34 @@ function Welcome({ onStart }: { onStart: () => void }) {
 }
 
 function Login({
-  onContinue,
+  onSignedIn,
   onBack,
 }: {
-  onContinue: () => void;
+  onSignedIn: (isNewAccount: boolean) => void;
   onBack: () => void;
 }) {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const isSignup = mode === "signup";
+
+  // The back end checks everything (valid email, password length, wrong password, taken email)
+  // and this form only shows its message
+  const submit = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await (isSignup ? signup : login)({ email, password, remember });
+      onSignedIn(isSignup);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <main className="login-page">
@@ -110,12 +130,12 @@ function Login({
           className="login-card"
           onSubmit={(event) => {
             event.preventDefault();
-            onContinue();
+            submit();
           }}
         >
           <div className="login-card-heading">
-            <Heading level={2}>Sign in to ParkOS</Heading>
-            <p>Use your account details to continue.</p>
+            <Heading level={2}>{isSignup ? "Create your ParkOS account" : "Sign in to ParkOS"}</Heading>
+            <p>{isSignup ? "Use at least 8 characters for your password." : "Use your account details to continue."}</p>
           </div>
           <Field
             label="Email address"
@@ -133,21 +153,19 @@ function Login({
           />
           <div className="login-options">
             <label className="remember-me">
-              <input type="checkbox" />
+              <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} />
               <span>Keep me signed in</span>
             </label>
-            <button type="button" className="text-button">Forgot password?</button>
           </div>
-          <Button type="submit" className="full-button">
-            Sign in <Icon name="arrow-right" />
+          {error && <p className="form-error" role="alert">{error}</p>}
+          <Button type="submit" className="full-button" disabled={busy}>
+            {busy ? "One moment…" : isSignup ? "Create account" : "Sign in"} <Icon name="arrow-right" />
           </Button>
-          <div className="login-divider"><span>New to ParkOS?</span></div>
-          <Button variant="secondary" className="full-button" onClick={onContinue}>
-            Create an account
+          <div className="login-divider"><span>{isSignup ? "Already have an account?" : "New to ParkOS?"}</span></div>
+          <Button variant="secondary" className="full-button"
+                  onClick={() => { setMode(isSignup ? "signin" : "signup"); setError(""); }}>
+            {isSignup ? "Sign in instead" : "Create an account"}
           </Button>
-          <p className="demo-note">
-            Front-end preview: any email and password will continue.
-          </p>
         </form>
       </section>
     </main>
@@ -245,11 +263,13 @@ function AppShell({
   screen,
   navigate,
   settings,
+  onSignOut,
   children,
 }: {
   screen: Screen;
   navigate: (screen: Screen) => void;
   settings: Settings | null;
+  onSignOut: () => void;
   children: ReactNode;
 }) {
   const remindersOn = settings?.reminders_enabled ?? false;
@@ -267,6 +287,7 @@ function AppShell({
         <div className="topbar-meta">
           <span className={`status-dot ${remindersOn ? "" : "off"}`}><i /> Reminders {remindersOn ? `on · ${settings?.lead_minutes} min` : "off"}</span>
           <span className="affiliation"><Icon name="user" size={16} /> {AFFILIATION_LABELS[settings?.affiliation ?? "student"]}</span>
+          <button type="button" className="text-button" onClick={onSignOut}>Sign out</button>
         </div>
       </header>
       <main className="app-content">{children}</main>
@@ -282,7 +303,8 @@ function AppShell({
 }
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("welcome");
+  // null while checking whether this browser is already signed in (its login cookie)
+  const [screen, setScreen] = useState<Screen | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   // Classes being set up during onboarding: filled by an upload or by hand, saved at the last step
   const [drafts, setDrafts] = useState<DraftClass[]>([]);
@@ -295,11 +317,32 @@ export default function App() {
     buildings: "grid",
   }), [imported]);
 
-  // Settings come from the API; every change is saved there and the returned copy kept here
-  useEffect(() => {
-    getSettings().then(setSettings).catch(() => setSettings(null));
-  }, []);
+  // Settings come from the API (the signed-in user's row); every change is saved there and the returned copy kept here
+  const loadSettings = () => getSettings().then(setSettings).catch(() => setSettings(null));
   const saveSettings = async (changes: Partial<Settings>) => setSettings(await updateSettings(changes));
+
+  // Already signed in (cookie still valid)? Go straight to the week; otherwise the welcome page
+  useEffect(() => {
+    currentUser()
+      .then((user) => {
+        if (user) loadSettings();
+        setScreen(user ? "week" : "welcome");
+      })
+      .catch(() => setScreen("welcome"));
+  }, []);
+
+  // New accounts set up their schedule; returning users find theirs already saved
+  const signedIn = (isNewAccount: boolean) => {
+    loadSettings();
+    setScreen(isNewAccount ? "role" : "week");
+  };
+  const signOut = async () => {
+    await logout().catch(() => {});
+    setSettings(null);
+    setDrafts([]);
+    setImported(null);
+    setScreen("welcome");
+  };
 
   const showImported = (result: ImportResult) => {
     setImported(result);
@@ -312,8 +355,9 @@ export default function App() {
     setScreen("grid");
   };
 
+  if (screen === null) return null;
   if (screen === "welcome") return <Welcome onStart={() => setScreen("login")} />;
-  if (screen === "login") return <Login onContinue={() => setScreen("role")} onBack={() => setScreen("welcome")} />;
+  if (screen === "login") return <Login onSignedIn={signedIn} onBack={() => setScreen("welcome")} />;
   if (screen === "role") return <RoleStep choose={(affiliation) => { saveSettings({ affiliation }).catch(() => {}); setScreen("method"); }} back={() => setScreen("login")} />;
   if (screen === "method") return <MethodStep select={(next) => (next === "grid" ? fillInMyself() : setScreen(next))} back={() => setScreen("role")} />;
   if (screen === "upload") return <UploadStep back={() => setScreen("method")} fillInMyself={fillInMyself} onImported={showImported} />;
@@ -321,7 +365,7 @@ export default function App() {
   if (screen === "buildings") return <BuildingsStep classes={drafts} setClasses={setDrafts} next={() => setScreen("week")} back={() => setScreen("grid")} />;
 
   return (
-    <AppShell screen={screen} navigate={setScreen} settings={settings}>
+    <AppShell screen={screen} navigate={setScreen} settings={settings} onSignOut={signOut}>
       {!settings && <p className="form-error" role="alert">Can't reach the ParkOS server. Is it running on port 5000?</p>}
       {screen === "week" && settings && (
         <WeekPage settings={settings} saveSettings={saveSettings} editReminders={() => setScreen("edit-reminders")} />

@@ -1,14 +1,13 @@
-"""The reminder job: every 30 seconds, send today's reminder email once its time has come.
+"""The reminder job: every 30 seconds, send each user's reminder email for today once its time has come.
 
-Rules:
-- reminders must be on, and an email address set (Edit reminders)
+Rules (checked separately for every user with reminders on and an email set):
 - automatic reminders: only between the reminder time and the first class (no point after class starts)
 - custom reminders (a time the user chose): within CUSTOM_GRACE_MIN of that time, so a reminder isn't
   sent hours late if the server was off
-- at most one email per day: the day is claimed in the sent log BEFORE sending, inside the store's
-  lock, so even two copies of the job can't both send it (in Phase 4 the reminders_sent table's
-  UNIQUE (user_id, reminder_date) does this). Exception: if the user re-times a custom reminder after
-  it was sent, it's sent again at the new time (they asked for it; handy for testing and demos)
+- at most one email per user per day: the day is claimed in the reminders_sent table BEFORE sending,
+  and that table's primary key (user_id, reminder_date) means only one claim can win, even if two
+  copies of the job run at once. Exception: if the user re-times a custom reminder after it was sent,
+  it's sent again at the new time (they asked for it; handy for testing and demos)
 
 It runs as a background thread in the Flask server. A production version could use cron or APScheduler.
 """
@@ -17,7 +16,9 @@ import time
 from datetime import datetime, timedelta
 
 from api.reminders import plan_days, send_reminder
-from api.store import edit_store, read_store
+from api.store import read_store
+from db import reminders as db
+from db.settings import users_with_reminders
 
 CHECK_EVERY_SECONDS = 30
 CUSTOM_GRACE_MIN = 30
@@ -30,23 +31,20 @@ def already_sent(sent, day):
     return not (day.get("custom") and sent.get("remind_at") != day["remind_at"])
 
 
-def check_once(now=None):
-    """Send today's reminder if it's due. Returns what happened, for logging and tests."""
-    now = now or datetime.now()
-    today = now.date().isoformat()
-    store = read_store()
-    settings = store["settings"]
-    if not settings["reminders_enabled"] or not settings["email"]:
-        return "reminders off or no email"
-    if today in store["reminders_sent"] and today not in store["custom_reminders"]:
+def check_user(user_id, now):
+    """Send this user's reminder for today if it's due. Returns what happened, for logging and tests."""
+    today = now.date()
+    store = read_store(user_id)
+    sent = db.sent_on(user_id, today)
+    if sent is not None and today.isoformat() not in store["custom_reminders"]:
         return "already handled today"                # quick exit: no need to plan the day again
 
-    day = plan_days(store, now.date(), now.date(), settings)[0]
+    day = plan_days(store, today, today, store["settings"])[0]
     if "remind_at" not in day:
         return f"no reminder today ({day['skipped']})"
-    if already_sent(store["reminders_sent"].get(today), day):
+    if already_sent(sent, day):
         return "already handled today"
-    remind_at = datetime.fromisoformat(f"{today}T{day['remind_at']}")
+    remind_at = datetime.combine(today, datetime.strptime(day["remind_at"], "%H:%M").time())
     if now < remind_at:
         return f"not yet (due {day['remind_at']})"
     if day["custom"]:
@@ -56,22 +54,31 @@ def check_once(now=None):
         return "class already started: too late to remind"
 
     # Claim the day first, so nothing else sends it; then send; then record how it went
-    with edit_store() as saved:
-        if already_sent(saved["reminders_sent"].get(today), day):
-            return "already handled today"
-        saved["reminders_sent"][today] = {"status": "sending", "remind_at": day["remind_at"]}
-    result = send_reminder(settings["email"], day)
-    with edit_store() as saved:
-        saved["reminders_sent"][today] = {**result, "remind_at": day["remind_at"], "custom": day["custom"]}
+    if not db.claim_day(user_id, today, day["remind_at"], day["custom"]):
+        return "already handled today"
+    result = send_reminder(store["settings"]["email"], day)
+    db.record_sent(user_id, today, result)
     return f"{result['status']}: {result.get('error') or result.get('email_id')}"
+
+
+def check_once(now=None):
+    """Check every user once. Returns {user_id: outcome}."""
+    now = now or datetime.now()
+    outcomes = {}
+    for user_id in users_with_reminders():
+        try:
+            outcomes[user_id] = check_user(user_id, now)
+        except Exception as error:                  # one user's bad data mustn't stop everyone else's reminders
+            outcomes[user_id] = f"error: {error}"
+    return outcomes
 
 
 def run_forever():
     while True:
         try:
-            outcome = check_once()
-            if outcome.startswith(("sent", "failed")):
-                print(f"[reminder job] {datetime.now():%H:%M:%S} {outcome}", flush=True)
+            for user_id, outcome in check_once().items():
+                if outcome.startswith(("sent", "failed", "error")):
+                    print(f"[reminder job] {datetime.now():%H:%M:%S} user {user_id}: {outcome}", flush=True)
         except Exception as error:                  # never let one bad check stop the job
             print(f"[reminder job] error: {error}", flush=True)
         time.sleep(CHECK_EVERY_SECONDS)

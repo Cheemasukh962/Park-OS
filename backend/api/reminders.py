@@ -14,11 +14,13 @@ from datetime import date, datetime, time, timedelta
 
 from flask import Blueprint, jsonify, request
 
+from api.auth import current_user_id
 from api.errors import BadRequest
 from api.params import int_param, parse_hhmm
 from api.planning import saved_schedule
 from api.shapes import suggestion_json
-from api.store import edit_store, read_store
+from api.store import read_store
+from db import reminders as db
 from notify.reminder_email import build_reminder_email
 from notify.sender import EmailError, send_email
 from parking.data import LOTS
@@ -52,7 +54,7 @@ def preview_settings(saved):
 @bp.get("/api/reminders/preview")
 def preview():
     start, end = date_range()
-    store = read_store()
+    store = read_store(current_user_id())
     days = plan_days(store, start, end, preview_settings(store["settings"]))
     return jsonify({"days": days, "summary": summary(days)})
 
@@ -60,8 +62,8 @@ def preview():
 @bp.post("/api/reminders/send-now")
 def send_now():
     # TESTING: email the next reminder right away, without waiting for its time.
-    # Logged separately, so it doesn't stop that day's real scheduled reminder.
-    store = read_store()
+    # Not written to the sent log, so it doesn't stop that day's real scheduled reminder.
+    store = read_store(current_user_id())
     if not store["settings"]["email"]:
         raise BadRequest("add your email under Edit reminders first")
     upcoming = [d for d in plan_days(store, date.today(), date.today() + timedelta(days=7), store["settings"])
@@ -69,8 +71,6 @@ def send_now():
     if not upcoming:
         raise BadRequest("no reminders in the next week")
     result = send_reminder(store["settings"]["email"], upcoming[0])
-    with edit_store() as saved:
-        saved["reminders_sent"].setdefault("tests", []).append({**result, "for_date": upcoming[0]["date"]})
     if result["status"] != "sent":
         raise BadRequest(result["error"])
     return jsonify(result)
@@ -92,18 +92,14 @@ def set_custom_reminder(day):
         raise BadRequest(f"reminders can be set up to {MAX_DAYS_AHEAD} days ahead")
     if datetime.combine(when, remind_at) < now.replace(second=0, microsecond=0):
         raise BadRequest("that time has already passed today")
-    with edit_store() as store:
-        store["custom_reminders"][when.isoformat()] = {"remind_at": f"{remind_at:%H:%M}",
-                                                       "set_at": now.isoformat(timespec="seconds")}
+    db.set_custom(current_user_id(), when, remind_at)
     return jsonify({"date": when.isoformat(), "remind_at": f"{remind_at:%H:%M}"})
 
 
 @bp.delete("/api/reminders/custom/<day>")
 def clear_custom_reminder(day):
     when = parse_date(day)
-    with edit_store() as store:
-        removed = store["custom_reminders"].pop(when.isoformat(), None)
-    if removed is None:
+    if not db.clear_custom(current_user_id(), when):
         return jsonify({"error": "no custom reminder on that day"}), 404
     return "", 204
 
@@ -118,7 +114,7 @@ def parse_date(value):
 @bp.get("/api/reminders/sent")
 def sent_log():
     # What the reminder job has sent (or failed to send), by date
-    return jsonify(read_store()["reminders_sent"])
+    return jsonify(db.sent_log(current_user_id()))
 
 
 def plan_days(store, start, end, settings):

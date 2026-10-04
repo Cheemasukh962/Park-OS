@@ -6,12 +6,17 @@ import type {
   Building, ClassInput, ImportResult, LotsGeoJson, Recommendations, ReminderPreview, SavedClass, Settings, TripQuery, TripRoute,
 } from "./types";
 
-/** Thrown when the API answers with an error, carrying its message for the UI to show. */
-export class ApiRequestError extends Error {}
+/** Thrown when the API answers with an error, carrying its message (and HTTP status) for the UI. */
+export class ApiRequestError extends Error {
+  constructor(message: string, readonly status = 0) {
+    super(message);
+  }
+}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
+    // The login cookie goes along automatically: the API is on the same site (Vite proxy / Vercel rewrite)
     response = await fetch(path, options);
   } catch {
     throw new ApiRequestError("Can't reach the ParkOS server. Is it running?");
@@ -23,9 +28,37 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const fallback = response.status >= 500
       ? `The server hit an error (${response.status}). Check the Flask terminal for the details.`
       : `Request failed (${response.status})`;
-    throw new ApiRequestError(body?.error ?? fallback);
+    throw new ApiRequestError(body?.error ?? fallback, response.status);
   }
   return body as T;
+}
+
+// --- Accounts ---
+
+export type User = { id: number; email: string };
+type Credentials = { email: string; password: string; remember: boolean };
+
+/** Create an account (and sign in). Fails with 409 if the email already has one. */
+export function signup(credentials: Credentials): Promise<User> {
+  return sendJson<User>("/api/auth/signup", "POST", credentials);
+}
+
+export function login(credentials: Credentials): Promise<User> {
+  return sendJson<User>("/api/auth/login", "POST", credentials);
+}
+
+export function logout(): Promise<void> {
+  return request<void>("/api/auth/logout", { method: "POST" });
+}
+
+/** Who is signed in, or null if nobody (the API answers 401). */
+export async function currentUser(): Promise<User | null> {
+  try {
+    return await request<User>("/api/auth/me");
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 401) return null;
+    throw error;
+  }
 }
 
 function sendJson<T>(path: string, method: string, data: unknown): Promise<T> {
