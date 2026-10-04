@@ -255,41 +255,28 @@ The data falls into three groups:
 
 ---
 
-## 8. Database plan (draft, 12 tables)
+## 8. Database (revised Oct 3: plain Postgres on Railway, no PostGIS, 7 tables)
 
-Terms explained to the user: primary key (PK), foreign key (FK), one-to-many, many-to-many (through a table in between), one-to-one, UNIQUE, NULL.
+**The schema is `backend/db/schema.sql`** (checked with Postgres's own parser, `pglast`). It replaces the Sept 28 12-table draft.
 
-### Campus data
-- **`zones`**: `code` text PK (`'A'`, `'C'`, `'C+'`, `'L'`, used as the key itself), `name`, `description`
-- **`zone_rates`**: `id` PK, `zone_code` FK→zones, `affiliation` (student/staff/visitor), `price_cents` integer, `available_from` time (nullable; e.g. A for students from 17:00), `effective_from` date
-  - **Money is stored as whole cents** ($3.50 = 350) to avoid rounding errors.
-  - No row for a zone and user type means that user can't park there.
-  - Old rows are kept as price history.
-- **`lots`**: `id` PK, `source_id` UNIQUE (**the map's `GlobalID`**, so re-imports don't duplicate), `name` (nullable: 71 lots have none), `zone_code` FK→zones (**nullable** for the 67 Misc. lots), **`status`** (`open`/`restricted`/`closed`), **`status_reason`** (nullable text, e.g. "Under construction"), `parkmobile_zone` (nullable, filled in by hand), `geom geometry(MultiPolygon, 4326)`
-  - Import maps `Existing` → open, `Restricted` → restricted, `Under Construction` → closed with reason "Under construction". Recommendations use `open` lots only. **Flag rather than delete**, so a lot can be reopened by changing one value.
-- **`buildings`**: `id` PK, `caan` UNIQUE (the map's `pk_CAAN`), `name`, **`category`** (from `type1_name`; the parser searches Academic first and falls back to the rest), `aliases text[]` (schedule short names, e.g. WELLMN), `geom geometry(MultiPolygon, 4326)`
-- **`terms`**: `id` PK, `name` ("Fall 2026"), `start_date`, `end_date`
-- **`closures`**: `date` PK, `reason` ("Thanksgiving")
+**Decisions (Oct 3):**
+- **No PostGIS.** All distance work runs in Python on 124 lots and 1,491 buildings held in memory (milliseconds), and Google's real walking/driving times decide the picks. PostGIS would only pay off with thousands of shapes. Interview line: "I evaluated PostGIS, but the dataset fits in memory, so spatial logic stays in Python and Postgres holds user data."
+- **Campus reference data stays as repo files**, the same for every user and changed a few times a year: `data/*.geojson` (lots, buildings), `data/zone_rates.csv` (prices), `parking/academic_calendar.py` (quarter dates, holidays). So the old `zones`, `zone_rates`, `lots`, `buildings`, `terms`, `closures` tables are dropped, and `schedule_entries.building_id` is the map's `OBJECTID` with no foreign key (the API checks it exists).
+- **Accounts: username + password.** Each user only ever sees their own data. Passwords stored only as a salted scrypt hash (`werkzeug.security`, ships with Flask). Login uses Flask's signed session cookie (needs `SECRET_KEY`), so no sessions table.
+- **Hosting:** back end + Postgres on **Railway** (always-on process, which the reminder job needs; Vercel's serverless Python would never run it). Front end on **Vercel**, with a rewrite sending `/api/*` to Railway so the browser sees one site and the login cookie just works.
 
-### User data
-- **`users`**: `id` PK, `email` UNIQUE, `password_hash` (never the real password; hash with bcrypt or argon2), `affiliation`, `walk_limit_min` (default 10), `created_at timestamptz`
-- **`reminder_settings`** (one-to-one): `user_id` is both PK and FK→users (this forces one row per user), `enabled`, `lead_minutes`, `channel` ('email'/'push'). These columns could live on `users` instead; kept separate as one-to-one practice.
-- **`schedule_entries`**: `id` PK, `user_id` FK, `term_id` FK, `course` ("ECS 36A"), `section_type` (LEC/DIS/LAB), `days smallint[]` ({1,3,5} = Mon/Wed/Fri, 1 = Monday), `start_time`/`end_time` time (campus local), `building_id` FK→buildings (**nullable**, for when the parser can't match; the user fixes it), `room`
-- **`favorites`** (many-to-many, users ↔ lots): `user_id` FK, `lot_id` FK, `created_at`; **combined PK (user_id, lot_id)** so a lot can't be saved twice
+**Tables:**
+- **`users`**: `id`, `username` (3-30 of letters/digits/_/.; unique ignoring capitals via an index on `lower(username)`), `password_hash`, `created_at`
+- **`user_settings`** (one-to-one, `user_id` is the PK): `email` (where reminders go), `affiliation`, `reminders_enabled`, `lead_minutes` (30), `walk_limit_min` (10), `priority` (best/cheapest/closest), `channel`. Lead time and walk limit are hidden in the UI for now but keep their defaults.
+- **`schedule_entries`**: `id`, `user_id`, `course`, `days smallint[]` (1 = Mon ... 7 = Sun), `start_time`, `end_time` (> start), `building_id` (nullable), `room`, `created_at`
+- **`custom_reminders`**: PK (`user_id`, `reminder_date`), `remind_at`, `set_at`. A day's own time: replaces the automatic one on a class day, creates a reminder on any other day.
+- **`reminders_sent`**: PK (`user_id`, `reminder_date`), so one row per user per day and the job can't double-send. `remind_at`, `custom`, `status` (sending/sent/failed), `to_email`, `provider_id`, `error`, `sent_at`. A re-timed custom reminder UPDATEs its row and is sent again.
+- **`route_cache`**: `cache_key` PK, `kind` (walk/drive/walk_route/drive_route), `seconds`, `metres`, `path jsonb`. Shared by all users. A table, not a file, because Railway wipes local files on every deploy.
+- **`api_usage`**: PK (`provider`, `month`), `requests`: the Google monthly cap.
 
-### System data
-- **`reminders_sent`**: `id` PK, `user_id` FK, `reminder_date`, `lot_id` FK (nullable; the lot recommended at the time), `channel`, `status` (sent/failed), `sent_at timestamptz`, with **UNIQUE (user_id, reminder_date)** so the same reminder can't go out twice even if the job runs twice
-- **`push_subscriptions`** (later): `id` PK, `user_id` FK, `endpoint` UNIQUE, `keys jsonb`
+**Design choices kept:** money in whole cents; class times as `time` and events as `timestamptz`; days as an array; `building_id` nullable on purpose (the reminder still goes out).
 
-### Design choices
-- **Class times** use `time` (they repeat every week). **Events that happened** use `timestamptz` (stored in UTC). Convert with `America/Los_Angeles`.
-- **Days as an array**, checked against `EXTRACT(ISODOW ...)`.
-- **Two links are nullable on purpose** (`lots.zone_code`, `schedule_entries.building_id`) because real data is messy. Keep the row and fix it later.
-- The only stored snapshot of a recommendation is `reminders_sent.lot_id`.
-- **Every shape is stored as MultiPolygon.** The source mixes Polygon and MultiPolygon, and a PostGIS column accepts one type, so the import wraps single Polygons with `ST_Multi`. This costs nothing noticeable: the work depends on the number of corner points, not the type.
-- **Measure in metres, not degrees.** `ST_Distance` on 4326 geometry returns degrees. Cast to geography: `ST_Distance(a.geom::geography, b.geom::geography)` returns metres.
-- **Add a GiST spatial index** on each `geom` column so Postgres can skip far-away shapes.
-- `zone_rates` answers both "may this user park here?" and "how much?": no row, or a time before `available_from`, means not allowed. Misc. lots have no zone, so no row, so they're excluded automatically.
+**Dropped for now:** `favorites`, `push_subscriptions` (not built).
 
 ---
 
