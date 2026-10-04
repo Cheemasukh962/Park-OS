@@ -21,6 +21,11 @@ def create_app():
 
 app = create_app()
 
+# On Railway (which sets RAILWAY_ENVIRONMENT_NAME), gunicorn imports this file once, so start the job here
+if os.environ.get("RAILWAY_ENVIRONMENT_NAME") or os.environ.get("RAILWAY_ENVIRONMENT"):
+    from jobs import reminder_job
+    reminder_job.start()
+
 if __name__ == "__main__":
     # In debug mode Flask runs this file twice: a watcher process, and the real server (which has
     # WERKZEUG_RUN_MAIN set). Start the reminder job only in the real server, or it would run twice.
