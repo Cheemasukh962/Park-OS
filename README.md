@@ -4,7 +4,7 @@
 
 ## Video
 
-VIDEO: _(link coming soon)_
+VIDEO: _(https://youtu.be/TjIUbDBwllk)_
 
 ---
 
