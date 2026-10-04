@@ -1,0 +1,73 @@
+"""Planning one day's reminder: when to send it, what it says, and which lot to suggest.
+
+A schedule is a list of classes like
+    {"course": "ECS 36A", "days": [1, 3, 5], "start": time(10, 0), "building": <building feature or None>}
+days use ISO numbers (1 = Monday ... 7 = Sunday). building is optional: the reminder always goes
+out, and the lot suggestion is only added for the buildings we know.
+"""
+from datetime import datetime, timedelta
+
+from parking.academic_calendar import skip_reason
+from parking.data import is_open, lot_label, zone_letter
+from parking.geo import distance
+from parking.prices import dollars, price_for
+from parking.ranking import WALK_METRES_PER_MIN, pick
+
+
+def classes_on(day, schedule):
+    # That weekday's classes, earliest first
+    todays = [entry for entry in schedule if day.isoweekday() in entry["days"]]
+    todays.sort(key=lambda entry: entry["start"])
+    return todays
+
+
+def lot_options(buildings_today, lots, arrival_hour, affiliation, walk=distance):
+    # Every allowed lot, ranked by the day's LONGEST walk to any of today's buildings.
+    # walk(building, lot) gives metres: the straight line by default, or real Google walks
+    options = []
+    for lot in lots:
+        if not is_open(lot):
+            continue
+        price = price_for(zone_letter(lot), affiliation, arrival_hour)   # you pay when you ARRIVE
+        if price is None:
+            continue
+        longest_walk = max(walk(building, lot) for building in buildings_today)
+        options.append((longest_walk, price, lot))
+    options.sort(key=lambda option: option[0])                 # nearest first, as pick() expects
+    return options
+
+
+def plan_reminder(day, schedule, settings, lots, walk=distance):
+    """(reminder, None) for a school day with classes, or (None, reason) otherwise.
+    settings needs affiliation, lead_minutes, walk_limit_min and priority."""
+    reason = skip_reason(day)
+    if reason:
+        return None, reason
+
+    todays = classes_on(day, schedule)
+    if not todays:
+        return None, "no classes"
+
+    first = todays[0]
+    remind_at = datetime.combine(day, first["start"]) - timedelta(minutes=settings["lead_minutes"])
+
+    # The reminder itself only needs the time
+    first_building = first["building"]["properties"]["loc_name"] if first["building"] else None
+    where = f" in {first_building}" if first_building else ""
+    message = f"Class at {first['start']:%H:%M}{where}. Don't forget to pay for parking."
+
+    # Bonus: a lot suggestion for the buildings we know (each building counted once)
+    buildings_today = list({id(e["building"]): e["building"] for e in todays if e["building"]}.values())
+    suggestion = None
+    if buildings_today:
+        options = lot_options(buildings_today, lots, first["start"].hour, settings["affiliation"], walk)
+        if options:
+            chosen = pick(options, settings["priority"], settings["walk_limit_min"])   # same rule as the map
+            closest = pick(options, "closest", settings["walk_limit_min"])
+            suggestion = {"chosen": chosen, "closest": closest}
+            metres, price, lot = chosen
+            message += (f" Cheapest nearby: {lot_label(lot)} ({zone_letter(lot)} zone, {dollars(price)}), "
+                        f"longest walk today {metres / WALK_METRES_PER_MIN:.0f} min.")
+
+    return {"remind_at": remind_at, "first": first, "first_building": first_building, "message": message,
+            "suggestion": suggestion, "buildings": buildings_today}, None
