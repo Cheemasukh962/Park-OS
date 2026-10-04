@@ -115,6 +115,7 @@ All screens are in one file, switched by a `screen` state value. Onboarding firs
 - **IDs are the map data's `OBJECTID` for now** (Olson Hall = 439, Wellman Hall = 627, Lot 2 = 2209). Always get IDs from the API, never hard-code them; they change when the database arrives.
 - **Errors** are always JSON: `{"error": "hour must be 0-23"}`, with status 400 (bad input) or 404 (not found). Show the message to the user or log it.
 - Success codes: 200 OK, 201 Created (POST), 204 No Content (DELETE, empty body).
+- **The back end decides, the front end displays.** Every rule (who may park where, prices, arrival time, savings, walk-limit checks, class validation, reminder times) lives in Flask. The UI must not re-implement any of them: two copies of a rule drift apart (that's how the Map page once used a different arrival time than the reminders). If a screen needs a new fact, add a field to the API.
 
 ### Conventions
 - **Money is in whole cents:** `375` = $3.75. Format for display only (`(cents / 100).toFixed(2)`).
@@ -139,7 +140,11 @@ Up to 8 results: Academic buildings first, numbered names (water wells like "Wel
 { "id": 7, "course": "ECS 36A", "days": [1, 3, 5], "start": "10:00", "end": "10:50",
   "building_id": 439, "building_name": "Olson Hall" }
 ```
-POST/PUT send the same object without `id` and `building_name`. `end` and `building_id` may be `null`. The API **rejects** 0-based days (`[0, 2, 4]`) and 12-hour times (`"10:00 am"`) with a 400, so convert before sending.
+POST/PUT send the same object without `id` and `building_name`. `end` and `building_id` may be `null`. Times are 24-hour; `"9:00"` is accepted and tidied to `"09:00"`, `end` must be after `start`. The API **rejects** 0-based days (`[0, 2, 4]`) and 12-hour times (`"10:00 am"`) with a 400.
+
+**`PUT /api/schedule`** replaces the **whole** schedule with a JSON list in one request (onboarding's final save). All classes are checked first: one invalid class means nothing is saved.
+
+**`POST /api/schedule/validate`** checks one class **without saving** and returns it tidied, or a 400 with the reason. The class editor uses this instead of its own rules.
 
 **`POST /api/schedule/import`** (upload step): send the user's schedule file as a multipart upload in a field called `file`. Accepts Schedule Builder's **calendar export (.ics)** or its **printed page (.pdf)**, up to 5 MB. **Nothing is saved**: show the result for review (the Grid step), then save the ticked classes one by one with `POST /api/schedule`.
 ```ts
@@ -170,9 +175,10 @@ const result = await fetch("/api/schedule/import", { method: "POST", body: form 
 ```
 PUT sends only the keys being changed, e.g. `{"lead_minutes": 45}`. Limits: `lead_minutes` 0–180, `walk_limit_min` 1–30, `priority` best/cheapest/closest, `channel` email only for now.
 
-**`GET /api/reminders/preview?from=2026-11-02&to=2026-11-08`** (F5, F6): one entry per date
+**`GET /api/reminders/preview?from=2026-11-02&to=2026-11-08`** (F5, F6): `{"days": [...], "summary": {...}}`, one day entry per date. Optional `&lead_minutes=45` previews a different reminder time without saving (the settings page uses it).
 ```json
-[
+{ "summary": { "next_reminder": { "date": "2026-11-02", "remind_at": "09:30" }, "saves_cents_total": 200 },
+  "days": [
   { "date": "2026-11-02", "remind_at": "09:30", "first_class": { "course": "ECS 36A", "start": "10:00", "building_name": "Olson Hall" },
     "message": "Class at 10:00 in Olson Hall. Don't forget to pay for parking. Cheapest nearby: Lot 5 (C zone, $5.50), longest walk today 4 min.",
     "suggestion": { "lot_id": 2223, "lot_name": "Lot 5", "zone": "C", "price_cents": 550, "metres": 278, "walk_min": 4,
@@ -182,8 +188,9 @@ PUT sends only the keys being changed, e.g. `{"lead_minutes": 45}`. Limits: `lea
   { "date": "2026-11-03", "remind_at": "11:40", "first_class": { "course": "MAT 21C", "start": "12:10", "building_name": null },
     "message": "Class at 12:10. Don't forget to pay for parking.", "suggestion": null },
   { "date": "2026-11-07", "skipped": "weekend" }
-]
+] }
 ```
+Each pick in `suggestion.picks` (`best` / `cheapest` / `closest`) also has the verdict fields below (`saves_cents`, `over_walk_limit`, `access_note`).
 `suggestion` is `null` when no building is known for that day; it uses the user's saved `priority`. Its `walk_min` and `metres` are the day's **longest** walk (to the furthest class building). `saves_cents` is 0 when the pick is also the closest lot: hide the savings line then. `skipped` is one of `"weekend"`, `"outside the quarter"`, `"no classes"`, or a holiday name. `from` defaults to today and `to` to six days later; at most 31 days per request.
 
 **`GET /api/recommendations`** (F9, F10, F12): lots for a trip. Send a class building, the user's location, or **both**:
@@ -211,6 +218,12 @@ Optional: `hour` (0–23, default: now), `affiliation` and `walk_limit_min` (def
 - `drive_min`, `drive_metres`: the drive from the user's location. `null` when no location was sent.
 - `total_min`: drive + walk (whichever legs exist).
 - `directions_url`: opens Google Maps with **driving directions to the lot**. Use it for a "Directions" button (`<a href={lot.directions_url} target="_blank" rel="noopener">`). No key needed; on phones it opens the Maps app.
+- **Verdicts (decided by the API, just display them):** `saves_cents` (vs the closest lot; negative = costs more), `over_walk_limit` (true/false), `access_note` (e.g. `"A: students after 5 pm"`, from the rate table, or null).
+
+**The response also has:**
+- `arrival`: which hour the lots are for and why. Without `?hour=`, the API uses the user's **next class at that building, arriving 20 min early** (the same rule as the reminders), e.g. `{"hour": 11, "reason": "next class", "course": "FRS 003 Seminar", "date": "2026-10-08", "start": "12:10"}`; with no building, `"reason": "now"`.
+- `allowed_lot_ids`: every lot this user may park in at that hour (draw these solid on the map, others faded).
+- `far_from_campus`: true when the user's location is over 30 km from campus.
 
 **How the picks work** (tunable in `backend/parking/trips.py`):
 - **Closest**: shortest total trip.
