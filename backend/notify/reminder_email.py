@@ -3,6 +3,7 @@
 Built from the same day plan the Week page shows (api/reminders.day_json), so the email and the
 app always agree. Every email has an HTML version (what most inboxes show) and a plain-text one.
 """
+import re
 from html import escape
 
 
@@ -20,8 +21,11 @@ def build_reminder_email(day):
     """day: one entry from the reminder plan (with remind_at, first_class, suggestion).
     Returns (subject, html, text)."""
     first = day["first_class"]
-    where = f" in {first['building_name']}" if first["building_name"] else ""
-    class_line = f"Your first class today is {first['course']} at {clock(first['start'])}{where}."
+    if first is None:                     # a reminder the user added for a day without classes
+        class_line = "This is the parking reminder you set in ParkOS."
+    else:
+        where = f" in {first['building_name']}" if first["building_name"] else ""
+        class_line = f"Your first class today is {first['course']} at {clock(first['start'])}{where}."
     subject = "Pay for parking"
 
     lot = day.get("suggestion")
@@ -37,7 +41,8 @@ def build_reminder_email(day):
             extras.append(lot["access_note"] + ".")
         extra_line = " ".join(extras)
     else:
-        lot_line = "Add a building to today's classes in ParkOS to get a parking suggestion."
+        lot_line = ("" if first is None
+                    else "Add a building to today's classes in ParkOS to get a parking suggestion.")
         extra_line = ""
 
     text = "\n".join(line for line in [
@@ -51,6 +56,7 @@ def build_reminder_email(day):
         "Pay in the ParkMobile app before you leave your car.",
         "- ParkOS",
     ] if line is not None)
+    text = re.sub(r"\n{3,}", "\n\n", text)        # empty optional lines leave gaps: close them up
 
     # Inline styles only: email apps ignore <style> blocks and external CSS
     lot_html = ""
@@ -64,7 +70,7 @@ def build_reminder_email(day):
         {f'<div style="margin-top:8px">{escape(extra_line)}</div>' if extra_line else ''}
         <a href="{escape(lot['directions_url'])}" style="display:inline-block;margin-top:10px;color:#022851;font-weight:700">Directions in Google Maps →</a>
       </div>"""
-    else:
+    elif lot_line:
         lot_html = f'<p style="color:#13639e">{escape(lot_line)}</p>'
 
     html = f"""<div style="font-family:Arial,Helvetica,sans-serif;color:#022851;max-width:520px;margin:auto;padding:24px">

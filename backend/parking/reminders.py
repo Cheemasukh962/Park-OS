@@ -39,19 +39,30 @@ def lot_options(buildings_today, lots, arrival_hour, affiliation, walk=distance)
     return options
 
 
-def plan_reminder(day, schedule, settings, lots, walk=distance):
+def plan_reminder(day, schedule, settings, lots, walk=distance, custom_time=None):
     """(reminder, None) for a school day with classes, or (None, reason) otherwise.
-    settings needs affiliation, lead_minutes, walk_limit_min and priority."""
-    reason = skip_reason(day)
-    if reason:
-        return None, reason
+    settings needs affiliation, lead_minutes, walk_limit_min and priority.
 
+    custom_time: a time the user chose for this day. It always wins: on a class day it replaces the
+    automatic time; on any other day (weekend, holiday, no classes) it creates a reminder."""
     todays = classes_on(day, schedule)
-    if not todays:
-        return None, "no classes"
+    if custom_time is None:
+        reason = skip_reason(day)
+        if reason:
+            return None, reason
+        if not todays:
+            return None, "no classes"
+    elif not todays:
+        # A reminder the user added for a day without classes: just the nudge, no class or lot
+        return {"remind_at": datetime.combine(day, custom_time), "custom": True, "first": None,
+                "first_building": None, "message": "Your ParkOS reminder: don't forget to pay for parking.",
+                "suggestion": None, "buildings": []}, None
 
     first = todays[0]
-    remind_at = datetime.combine(day, first["start"]) - timedelta(minutes=settings["lead_minutes"])
+    if custom_time is not None:
+        remind_at = datetime.combine(day, custom_time)
+    else:
+        remind_at = datetime.combine(day, first["start"]) - timedelta(minutes=settings["lead_minutes"])
 
     # The reminder itself only needs the time
     first_building = first["building"]["properties"]["loc_name"] if first["building"] else None
@@ -73,5 +84,6 @@ def plan_reminder(day, schedule, settings, lots, walk=distance):
             message += (f" Suggested lot: {lot_label(lot)} ({zone_letter(lot)} zone, {dollars(price)}), "
                         f"about {metres / WALK_METRES_PER_MIN:.0f} min walk to your furthest class.")
 
-    return {"remind_at": remind_at, "first": first, "first_building": first_building, "message": message,
+    return {"remind_at": remind_at, "custom": custom_time is not None, "first": first,
+            "first_building": first_building, "message": message,
             "suggestion": suggestion, "buildings": buildings_today}, None

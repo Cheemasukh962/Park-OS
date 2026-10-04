@@ -30,9 +30,11 @@ DEFAULT_SETTINGS = {
 
 def _read():
     if not STORE.exists():
-        return {"settings": dict(DEFAULT_SETTINGS), "schedule": [], "next_id": 1, "reminders_sent": {}}
+        return {"settings": dict(DEFAULT_SETTINGS), "schedule": [], "next_id": 1,
+                "reminders_sent": {}, "custom_reminders": {}}
     store = json.loads(STORE.read_text())
     store.setdefault("reminders_sent", {})       # {"2026-10-05": {...}}: one entry per day, so never twice
+    store.setdefault("custom_reminders", {})     # {"2026-10-03": {"remind_at": "20:55"}}: times the user chose
     return store
 
 

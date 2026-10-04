@@ -1,4 +1,7 @@
 """Reading and checking query parameters (?building_id=439&lat=...). Never trust what the browser sends."""
+import re
+from datetime import time
+
 from flask import request
 
 from api.errors import BadRequest
@@ -42,3 +45,13 @@ def location_param():
 def location_key(point):
     # Rounded to 4 decimals (about 10 m), so nearby requests share cached Google answers
     return f"p{point[0]:.4f},{point[1]:.4f}"
+
+
+def parse_hhmm(value):
+    # "14:10" or "9:00" → time(14, 10) / time(9, 0); anything else → None
+    if not isinstance(value, str) or not re.fullmatch(r"\d{1,2}:\d\d", value.strip()):
+        return None
+    try:
+        return time.fromisoformat(value.strip().zfill(5))           # "9:00" → "09:00"
+    except ValueError:
+        return None

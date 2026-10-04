@@ -4,13 +4,18 @@ Optional ?lead_minutes=45 previews a different reminder time without saving it (
 uses this, so the "remind at" maths only ever happens here).
 
 Response: {"days": [one entry per date], "summary": {"next_reminder": {...} or null, "saves_cents_total": 550}}
+
+PUT    /api/reminders/custom/2026-10-03  {"remind_at": "20:55"}   set this day's reminder time yourself
+DELETE /api/reminders/custom/2026-10-03                            back to the automatic time
+A custom time replaces the automatic one on a class day, and creates a reminder on any other day
+(weekends, holidays), which is also how reminders can be tested live.
 """
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 from flask import Blueprint, jsonify, request
 
 from api.errors import BadRequest
-from api.params import int_param
+from api.params import int_param, parse_hhmm
 from api.planning import saved_schedule
 from api.shapes import suggestion_json
 from api.store import edit_store, read_store
@@ -62,13 +67,52 @@ def send_now():
     upcoming = [d for d in plan_days(store, date.today(), date.today() + timedelta(days=7), store["settings"])
                 if "remind_at" in d]
     if not upcoming:
-        raise BadRequest("no class days in the next week to remind about")
+        raise BadRequest("no reminders in the next week")
     result = send_reminder(store["settings"]["email"], upcoming[0])
     with edit_store() as saved:
         saved["reminders_sent"].setdefault("tests", []).append({**result, "for_date": upcoming[0]["date"]})
     if result["status"] != "sent":
         raise BadRequest(result["error"])
     return jsonify(result)
+
+
+MAX_DAYS_AHEAD = 60
+
+
+@bp.put("/api/reminders/custom/<day>")
+def set_custom_reminder(day):
+    when = parse_date(day)
+    remind_at = parse_hhmm((request.get_json(silent=True) or {}).get("remind_at"))
+    if remind_at is None:
+        raise BadRequest('send {"remind_at": "HH:MM"}, e.g. "20:55" or "9:30"')
+    now = datetime.now()
+    if when < now.date():
+        raise BadRequest("that day has already passed")
+    if when > now.date() + timedelta(days=MAX_DAYS_AHEAD):
+        raise BadRequest(f"reminders can be set up to {MAX_DAYS_AHEAD} days ahead")
+    if datetime.combine(when, remind_at) < now.replace(second=0, microsecond=0):
+        raise BadRequest("that time has already passed today")
+    with edit_store() as store:
+        store["custom_reminders"][when.isoformat()] = {"remind_at": f"{remind_at:%H:%M}",
+                                                       "set_at": now.isoformat(timespec="seconds")}
+    return jsonify({"date": when.isoformat(), "remind_at": f"{remind_at:%H:%M}"})
+
+
+@bp.delete("/api/reminders/custom/<day>")
+def clear_custom_reminder(day):
+    when = parse_date(day)
+    with edit_store() as store:
+        removed = store["custom_reminders"].pop(when.isoformat(), None)
+    if removed is None:
+        return jsonify({"error": "no custom reminder on that day"}), 404
+    return "", 204
+
+
+def parse_date(value):
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        raise BadRequest('dates look like "2026-10-03"')
 
 
 @bp.get("/api/reminders/sent")
@@ -84,10 +128,11 @@ def plan_days(store, start, end, settings):
     # Real walks between every class building and its nearby lots (cached, so usually free)
     class_buildings = list({id(e["building"]): e["building"] for e in schedule if e["building"]}.values())
     walks = WalkTable(class_buildings, LOTS, settings["affiliation"], settings["walk_limit_min"])
+    custom = {d: time.fromisoformat(c["remind_at"]) for d, c in store["custom_reminders"].items()}
     days = []
     day = start
     while day <= end:
-        reminder, reason = plan_reminder(day, schedule, settings, LOTS, walks.metres)
+        reminder, reason = plan_reminder(day, schedule, settings, LOTS, walks.metres, custom.get(day.isoformat()))
         days.append({"date": day.isoformat(), "skipped": reason} if reminder is None
                     else day_json(day, reminder, settings, walks))
         day += timedelta(days=1)
@@ -109,8 +154,10 @@ def day_json(day, reminder, settings, walks):
     item = {
         "date": day.isoformat(),
         "remind_at": f"{reminder['remind_at']:%H:%M}",
-        "first_class": {"course": first["course"], "start": f"{first['start']:%H:%M}",
-                        "building_name": reminder["first_building"]},
+        # null on a day without classes that has a reminder the user added
+        "first_class": None if first is None else {"course": first["course"], "start": f"{first['start']:%H:%M}",
+                                                   "building_name": reminder["first_building"]},
+        "custom": reminder["custom"],                    # true when the user chose this time
         "message": reminder["message"],
         "suggestion": None,
     }

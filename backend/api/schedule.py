@@ -7,27 +7,15 @@ POST   /api/schedule/validate   check one without saving it
 PUT    /api/schedule/<id>   replace one
 DELETE /api/schedule/<id>   remove one → 204 No Content
 """
-import re
-from datetime import time
-
 from flask import Blueprint, jsonify, request
 
 from api.errors import BadRequest
+from api.params import parse_hhmm
 from api.shapes import entry_json
 from api.store import edit_store, read_store
 from parking.data import BUILDINGS_BY_ID
 
 bp = Blueprint("schedule", __name__)
-
-
-def parse_hhmm(value):
-    # "14:10" or "9:00" → time(14, 10) / time(9, 0); anything else → None
-    if not isinstance(value, str) or not re.fullmatch(r"\d{1,2}:\d\d", value.strip()):
-        return None
-    try:
-        return time.fromisoformat(value.strip().zfill(5))           # "9:00" → "09:00"
-    except ValueError:
-        return None
 
 
 def validate_entry(body):
