@@ -4,7 +4,8 @@
 
 ## Video
 
-VIDEO: _(https://youtu.be/TjIUbDBwllk)_
+VIDEO: https://youtu.be/TjIUbDBwllk
+
 
 ---
 
