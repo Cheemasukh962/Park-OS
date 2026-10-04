@@ -1,1 +1,17 @@
 .claude/settings.local.json
+
+# Python
+.venv/
+__pycache__/
+
+# Local test data written by backend/app.py (replaced by Postgres in Phase 4)
+backend/store.json
+
+# Secrets: the Google Maps API key lives here, never in git
+.env
+
+# Cached Google walking/driving times and routes (rebuilt automatically)
+backend/routes_cache.json
+
+# Real schedule exports (contain names and student IDs): never commit
+data/samples/
